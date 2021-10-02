@@ -1,6 +1,6 @@
 {
-  "short_name": "Ubeswap Analytics",
-  "name": "Analytics for Ubeswap, a decentralized exchange on Celo.",
+  "short_name": "Tradegen Analytics",
+  "name": "Analytics for Tradegen, a decentralized asset management and algo trading platform on Celo.",
   "icons": [
     {
       "src": "./images/app-icon@192w.png",
