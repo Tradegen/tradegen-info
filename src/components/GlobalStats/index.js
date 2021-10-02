@@ -18,7 +18,6 @@ const Medium = styled.span`
 `
 
 export default function GlobalStats() {
-  const below1295 = useMedia('(max-width: 1295px)')
   const below1180 = useMedia('(max-width: 1180px)')
   const below1024 = useMedia('(max-width: 1024px)')
   const below400 = useMedia('(max-width: 400px)')
@@ -27,7 +26,6 @@ export default function GlobalStats() {
   const { oneDayVolumeUSD, oneDayTxns, pairCount } = useGlobalData()
   const [celoPrice] = useCeloPrice()
   const formattedCeloPrice = celoPrice ? formattedNum(celoPrice, true) : '-'
-  const oneDayFees = oneDayVolumeUSD ? formattedNum(oneDayVolumeUSD * 0.003, true) : ''
 
   return (
     <Header>
@@ -35,7 +33,7 @@ export default function GlobalStats() {
         <RowFixed>
           {!below400 && (
             <TYPE.main mr={'1rem'} style={{ position: 'relative' }}>
-              Celo Price: <Medium>{formattedCeloPrice}</Medium>
+              TGEN Price: <Medium>{formattedCeloPrice}</Medium>
             </TYPE.main>
           )}
 
@@ -46,12 +44,12 @@ export default function GlobalStats() {
           )}
           {!below1024 && (
             <TYPE.main mr={'1rem'}>
-              Pairs: <Medium>{localNumber(pairCount)}</Medium>
+              Pools: <Medium>{localNumber(pairCount)}</Medium>
             </TYPE.main>
           )}
-          {!below1295 && (
+          {!below1024 && (
             <TYPE.main mr={'1rem'}>
-              Fees (24H): <Medium>{oneDayFees}</Medium>&nbsp;
+              NFT Pools: <Medium>{localNumber(pairCount)}</Medium>
             </TYPE.main>
           )}
         </RowFixed>

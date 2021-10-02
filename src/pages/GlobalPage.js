@@ -71,7 +71,7 @@ function GlobalPage() {
       <ContentWrapper>
         <div>
           <AutoColumn gap="24px" style={{ paddingBottom: below800 ? '0' : '24px' }}>
-            <TYPE.largeHeader>{below800 ? 'Ubeswap Analytics' : 'Ubeswap Analytics'}</TYPE.largeHeader>
+            <TYPE.largeHeader>Tradegen Analytics</TYPE.largeHeader>
             <Search />
             <GlobalStats />
           </AutoColumn>
@@ -94,7 +94,7 @@ function GlobalPage() {
                     </AutoColumn>
                     <AutoColumn gap="20px">
                       <RowBetween>
-                        <TYPE.main>Total Liquidity</TYPE.main>
+                        <TYPE.main>Total Value Locked</TYPE.main>
                         <div />
                       </RowBetween>
                       <RowBetween align="flex-end">
@@ -130,7 +130,7 @@ function GlobalPage() {
           )}
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
-              <TYPE.main fontSize={'1.125rem'}>Top Tokens</TYPE.main>
+              <TYPE.main fontSize={'1.125rem'}>Top Pools</TYPE.main>
               <CustomLink to={'/tokens'}>See All</CustomLink>
             </RowBetween>
           </ListOptions>
@@ -139,7 +139,7 @@ function GlobalPage() {
           </Panel>
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
-              <TYPE.main fontSize={'1rem'}>Top Pairs</TYPE.main>
+              <TYPE.main fontSize={'1rem'}>Top NFT Pools</TYPE.main>
               <CustomLink to={'/pairs'}>See All</CustomLink>
             </RowBetween>
           </ListOptions>

@@ -89,7 +89,7 @@ const GlobalChart = ({ display }) => {
             data={dailyData}
             base={totalLiquidityUSD}
             baseChange={liquidityChangeUSD}
-            title="Liquidity"
+            title="Total Value Locked"
             field="totalLiquidityUSD"
             width={width}
             type={CHART_TYPES.AREA}
