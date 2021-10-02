@@ -131,7 +131,7 @@ function SideNav({ history }) {
                     }
                   >
                     <Disc size={20} style={{ marginRight: '.75rem' }} />
-                    Tokens
+                    Pools
                   </Option>
                 </BasicLink>
                 <BasicLink to="/pairs">
@@ -143,7 +143,7 @@ function SideNav({ history }) {
                     }
                   >
                     <PieChart size={20} style={{ marginRight: '.75rem' }} />
-                    Pairs
+                    NFT Pools
                   </Option>
                 </BasicLink>
 
@@ -164,26 +164,20 @@ function SideNav({ history }) {
           </AutoColumn>
           <AutoColumn gap="0.5rem" style={{ marginLeft: '.75rem', marginBottom: '4rem' }}>
             <HeaderText>
-              <Link href="https://ubeswap.org" target="_blank">
-                Ubeswap.org
+              <Link href="https://tradegen.io" target="_blank">
+                Tradegen.io
               </Link>
             </HeaderText>
             <HeaderText>
-              <Link href="https://docs.ubeswap.org/" target="_blank">
+              <Link href="https://docs.tradegen.io/" target="_blank">
                 Docs
               </Link>
             </HeaderText>
             <HeaderText>
-              <Link href="https://discord.gg/mS6Ad8Vmb2" target="_blank">
-                Discord
+              <Link href="https://github.com/Tradegen" target="_blank">
+                Code
               </Link>
             </HeaderText>
-            <HeaderText>
-              <Link href="https://twitter.com/ubeswap" target="_blank">
-                Twitter
-              </Link>
-            </HeaderText>
-            <Toggle isActive={isDark} toggle={toggleDarkMode} />
           </AutoColumn>
           {!below1180 && (
             <Polling style={{ marginLeft: '.5rem' }}>
