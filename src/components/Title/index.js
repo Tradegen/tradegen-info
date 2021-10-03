@@ -4,8 +4,8 @@ import { useMedia } from 'react-use'
 import { Flex } from 'rebass'
 import styled from 'styled-components'
 
-import Icon from '../../assets/icon.svg'
-import Logo from '../../assets/logo-dark.svg'
+import Icon from '../../assets/name.png'
+import Logo from '../../assets/name.png'
 import Link, { BasicLink } from '../Link'
 import { RowFixed } from '../Row'
 
@@ -47,7 +47,7 @@ export default function Title() {
         <RowFixed>
           <UniIcon id="link" onClick={() => history.push('/')}>
             {!below1080 ? (
-              <img width={'112px'} style={{ marginTop: '0px' }} src={Logo} alt="logo" />
+              <img width={'160px'} style={{ marginTop: '0px' }} src={Logo} alt="logo" />
             ) : (
               <img width={'24px'} src={Icon} alt="logo" />
             )}

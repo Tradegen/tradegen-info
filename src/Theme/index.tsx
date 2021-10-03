@@ -2,12 +2,8 @@ import React from 'react'
 import { Text } from 'rebass'
 import styled, { createGlobalStyle, ThemeProvider as StyledComponentsThemeProvider } from 'styled-components'
 
-import { useDarkModeManager } from '../contexts/LocalStorage'
-
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [darkMode] = useDarkModeManager()
-
-  return <StyledComponentsThemeProvider theme={theme(darkMode)}>{children}</StyledComponentsThemeProvider>
+  return <StyledComponentsThemeProvider theme={theme(true)}>{children}</StyledComponentsThemeProvider>
 }
 
 const theme = (darkMode: boolean, color?: string) => ({

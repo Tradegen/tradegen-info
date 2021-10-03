@@ -11,7 +11,6 @@ import { TYPE } from '../../Theme'
 import { AutoColumn } from '../Column'
 import Link, { BasicLink } from '../Link'
 import Title from '../Title'
-import Toggle from '../Toggle'
 
 const Wrapper = styled.div`
   height: ${({ isMobile }) => (isMobile ? 'initial' : '100vh')};
