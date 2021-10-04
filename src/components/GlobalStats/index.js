@@ -23,7 +23,7 @@ export default function GlobalStats() {
   const below400 = useMedia('(max-width: 400px)')
   const below816 = useMedia('(max-width: 816px)')
 
-  const { oneDayVolumeUSD, oneDayTxns, pairCount } = useGlobalData()
+  const { oneDayVolumeUSD, oneDayTxns, poolCount, NFTPoolCount } = useGlobalData()
   const [celoPrice] = useCeloPrice()
   const formattedCeloPrice = celoPrice ? formattedNum(celoPrice, true) : '-'
 
@@ -44,12 +44,12 @@ export default function GlobalStats() {
           )}
           {!below1024 && (
             <TYPE.main mr={'1rem'}>
-              Pools: <Medium>{localNumber(pairCount)}</Medium>
+              Pools: <Medium>{localNumber(poolCount)}</Medium>
             </TYPE.main>
           )}
           {!below1024 && (
             <TYPE.main mr={'1rem'}>
-              NFT Pools: <Medium>{localNumber(pairCount)}</Medium>
+              NFT Pools: <Medium>{localNumber(NFTPoolCount)}</Medium>
             </TYPE.main>
           )}
         </RowFixed>

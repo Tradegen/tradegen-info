@@ -3,7 +3,7 @@ import utc from 'dayjs/plugin/utc'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 
-import { client } from '../apollo/client'
+import { client, tradegenClient } from '../apollo/client'
 import {
   AllPairsQuery,
   AllPairsQueryVariables,
@@ -15,6 +15,10 @@ import {
   GlobalDataQuery,
   GlobalDataQueryVariables,
   GlobalTransactionsQuery,
+  GlobalDataTradegenLatestQuery,
+  GlobalDataTradegenLatestQueryVariables,
+  GlobalDataTradegenQuery,
+  GlobalDataTradegenQueryVariables
 } from '../apollo/generated/types'
 import {
   ALL_PAIRS,
@@ -26,8 +30,10 @@ import {
   GLOBAL_DATA_LATEST,
   GLOBAL_TXNS,
   TOP_LPS_PER_PAIRS,
+  GLOBAL_DATA_TRADEGEN,
+  GLOBAL_DATA_TRADEGEN_LATEST
 } from '../apollo/queries'
-import { FACTORY_ADDRESS } from '../constants'
+import { FACTORY_ADDRESS, ADDRESS_RESOLVER_ADDRESS } from '../constants'
 import {
   get2DayPercentChange,
   getBlockFromTimestamp,
@@ -47,6 +53,7 @@ const CELO_PRICE_KEY = 'CELO_PRICE_KEY'
 const UPDATE_ALL_PAIRS_IN_UBESWAP = 'UPDATE_TOP_PAIRS'
 const UPDATE_ALL_TOKENS_IN_UBESWAP = 'UPDATE_ALL_TOKENS_IN_UBESWAP'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
+const UPDATE_TRADEGEN = 'UPDATE_TRADEGEN'
 
 const offsetVolumes = [
   // '0x9ea3b5b4ec044b70375236a281986106457b20ef',
@@ -62,6 +69,7 @@ dayjs.extend(weekOfYear)
 
 interface IGlobalDataState {
   globalData?: IGlobalData
+  globalDataTradegen?: IGlobalDataTradegen
   chartData?: {
     daily: unknown
     weekly: unknown
@@ -80,6 +88,7 @@ interface IGlobalDataActions {
   updateTransactions: (txns: unknown) => void
   updateTopLps: (lps: unknown) => void
   updateCeloPrice: (newPrice: unknown, oneDayPrice: unknown, priceChange: unknown) => void
+  updateTradegen: (data: IGlobalDataTradegen) => void
 }
 
 const GlobalDataContext = createContext<[IGlobalDataState, IGlobalDataActions]>(null)
@@ -147,6 +156,15 @@ function reducer(state, { type, payload }) {
         topLps,
       }
     }
+
+    case UPDATE_TRADEGEN: {
+      const { data } = payload
+      return {
+        ...state,
+        globalDataTradegen: data,
+      }
+    }
+
     default: {
       throw Error(`Unexpected action type in DataContext reducer: '${type}'.`)
     }
@@ -220,6 +238,16 @@ export default function Provider({ children }: { children: React.ReactNode }) {
       },
     })
   }, [])
+
+  const updateTradegen = useCallback((data) => {
+    dispatch({
+      type: UPDATE_TRADEGEN,
+      payload: {
+        data,
+      },
+    })
+  }, [])
+
   return (
     <GlobalDataContext.Provider
       value={useMemo(
@@ -233,6 +261,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
             updateTopLps,
             updateAllPairsInUbeswap,
             updateAllTokensInUbeswap,
+            updateTradegen,
           },
         ],
         [
@@ -244,6 +273,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           updateCeloPrice,
           updateAllPairsInUbeswap,
           updateAllTokensInUbeswap,
+          updateTradegen
         ]
       )}
     >
@@ -259,6 +289,17 @@ type IGlobalData = GlobalDataQuery['ubeswapFactories'][number] &
     weeklyVolumeChange: number
     volumeChangeUSD: number
     liquidityChangeUSD: number
+    oneDayTxns: number
+    txnChange: number
+  }>
+
+type IGlobalDataTradegen = GlobalDataTradegenQuery['tradegens'][number] &
+  Partial<{
+    oneDayVolumeUSD: number
+    oneWeekVolumeUSD: number
+    weeklyVolumeChange: number
+    volumeChangeUSD: number
+    totalValueLockedChangeUSD: number
     oneDayTxns: number
     txnChange: number
   }>
@@ -557,12 +598,12 @@ const getCeloPrice = async () => {
     const oneDayBlock = await getBlockFromTimestamp(utcOneDayBack)
     const resultOneDay = oneDayBlock
       ? await client.query<CeloPriceQuery, CeloPriceQueryVariables>({
-          query: CELO_PRICE,
-          fetchPolicy: 'cache-first',
-          variables: {
-            block: oneDayBlock,
-          },
-        })
+        query: CELO_PRICE,
+        fetchPolicy: 'cache-first',
+        variables: {
+          block: oneDayBlock,
+        },
+      })
       : null
     const oneDayBackPrice = resultOneDay?.data?.bundles[0]?.celoPrice ?? celoPrice.toString()
     priceChangeCelo = getPercentChange(celoPrice.toString(), oneDayBackPrice)
@@ -636,16 +677,16 @@ async function getAllTokensOnUbeswap() {
 /**
  * Hook that fetches overview data, plus all tokens and pairs for search
  */
-export function useGlobalData(): Partial<IGlobalData> {
-  const [state, { update, updateAllPairsInUbeswap, updateAllTokensInUbeswap }] = useGlobalDataContext()
+export function useGlobalData(): Partial<IGlobalDataTradegen> {
+  const [state, { updateTradegen, updateAllPairsInUbeswap, updateAllTokensInUbeswap }] = useGlobalDataContext()
 
-  const data: IGlobalData | undefined = state?.globalData
+  const data: IGlobalDataTradegen | undefined = state?.globalDataTradegen
 
   const fetchData = useCallback(async () => {
-    const globalData = await getGlobalData()
+    const globalDataTradegen = await getGlobalDataTradegen()
 
-    if (globalData) {
-      update(globalData)
+    if (globalDataTradegen) {
+      updateTradegen(globalDataTradegen)
     }
 
     const allPairs = await getAllPairsOnUbeswap()
@@ -653,7 +694,7 @@ export function useGlobalData(): Partial<IGlobalData> {
 
     const allTokens = await getAllTokensOnUbeswap()
     updateAllTokensInUbeswap(allTokens)
-  }, [update, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
+  }, [updateTradegen, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
 
   useEffect(() => {
     if (!data) {
@@ -785,7 +826,7 @@ export function useTopLps() {
             if (results) {
               return results.liquidityPositions
             }
-          } catch (e) {}
+          } catch (e) { }
         })
       )
 
@@ -820,4 +861,117 @@ export function useTopLps() {
   })
 
   return topLps
+}
+
+async function getGlobalDataTradegen(): Promise<IGlobalDataTradegen | null> {
+  // data for each day , historic data used for % changes
+  let data: IGlobalDataTradegen | null = null
+  let oneDayData: GlobalDataTradegenQuery['tradegens'][number] | null = null
+  let twoDayData: GlobalDataTradegenQuery['tradegens'][number] | null = null
+
+  try {
+    // get timestamps for the days
+    const utcCurrentTime = dayjs()
+    const utcOneDayBack = utcCurrentTime.subtract(1, 'day').unix()
+    const utcTwoDaysBack = utcCurrentTime.subtract(2, 'day').unix()
+    const utcOneWeekBack = utcCurrentTime.subtract(1, 'week').unix()
+    const utcTwoWeeksBack = utcCurrentTime.subtract(2, 'week').unix()
+
+    // get the blocks needed for time travel queries
+    const [oneDayBlock, twoDayBlock, oneWeekBlock, twoWeekBlock] = await getBlocksFromTimestamps([
+      utcOneDayBack,
+      utcTwoDaysBack,
+      utcOneWeekBack,
+      utcTwoWeeksBack,
+    ])
+
+    // fetch the global data
+    const result = await tradegenClient.query<GlobalDataTradegenLatestQuery, GlobalDataTradegenLatestQueryVariables>({
+      query: GLOBAL_DATA_TRADEGEN_LATEST,
+      variables: {
+        addressResolverAddress: ADDRESS_RESOLVER_ADDRESS,
+      },
+      fetchPolicy: 'cache-first',
+    })
+    data = result.data.tradegens[0]
+
+    // fetch the historical data
+    const oneDayResult = await tradegenClient.query<GlobalDataTradegenLatestQuery, GlobalDataTradegenQueryVariables>({
+      query: GLOBAL_DATA_TRADEGEN,
+      variables: {
+        block: oneDayBlock?.number,
+        addressResolverAddress: ADDRESS_RESOLVER_ADDRESS,
+      },
+      fetchPolicy: 'cache-first',
+    })
+    oneDayData = oneDayResult.data.tradegens[0]
+
+    const twoDayResult = await tradegenClient.query<GlobalDataTradegenLatestQuery, GlobalDataTradegenQueryVariables>({
+      query: GLOBAL_DATA_TRADEGEN,
+      variables: {
+        block: twoDayBlock?.number,
+        addressResolverAddress: ADDRESS_RESOLVER_ADDRESS,
+      },
+      fetchPolicy: 'cache-first',
+    })
+    twoDayData = twoDayResult.data.tradegens[0]
+
+    const oneWeekResult = await tradegenClient.query<GlobalDataTradegenLatestQuery, GlobalDataTradegenQueryVariables>({
+      query: GLOBAL_DATA_TRADEGEN,
+      variables: {
+        block: oneWeekBlock?.number,
+        addressResolverAddress: ADDRESS_RESOLVER_ADDRESS,
+      },
+      fetchPolicy: 'cache-first',
+    })
+    const oneWeekData = oneWeekResult.data.tradegens[0]
+
+    const twoWeekResult = await tradegenClient.query<GlobalDataTradegenQuery>({
+      query: GLOBAL_DATA_TRADEGEN,
+      variables: {
+        block: twoWeekBlock?.number,
+        addressResolverAddress: ADDRESS_RESOLVER_ADDRESS,
+      },
+      fetchPolicy: 'cache-first',
+    })
+    const twoWeekData = twoWeekResult.data.tradegens[0]
+
+    if (data && oneDayData && twoDayData && twoWeekData) {
+      const [oneDayVolumeUSD, volumeChangeUSD] = get2DayPercentChange(
+        data.totalVolumeUSD,
+        oneDayData.totalVolumeUSD,
+        twoDayData.totalVolumeUSD
+      )
+
+      const [oneWeekVolume, weeklyVolumeChange] = get2DayPercentChange(
+        data.totalVolumeUSD,
+        oneWeekData.totalVolumeUSD,
+        twoWeekData.totalVolumeUSD
+      )
+
+      const [oneDayTxns, txnChange] = get2DayPercentChange(
+        data.txCount,
+        oneDayData.txCount ? oneDayData.txCount : '0',
+        twoDayData.txCount ? twoDayData.txCount : '0'
+      )
+
+      // format the total value locked in USD
+      const totalValueLockedChangeUSD = getPercentChange(data.totalValueLockedUSD, oneDayData.totalValueLockedUSD)
+      const additionalData = {
+        // add relevant fields with the calculated amounts
+        oneDayVolumeUSD: oneDayVolumeUSD,
+        oneWeekVolume: oneWeekVolume,
+        weeklyVolumeChange: weeklyVolumeChange,
+        volumeChangeUSD: volumeChangeUSD,
+        totalValueLockedChangeUSD: totalValueLockedChangeUSD,
+        oneDayTxns: oneDayTxns,
+        txnChange: txnChange,
+      }
+      return { ...data, ...additionalData }
+    }
+  } catch (e) {
+    console.log(e)
+  }
+
+  return data
 }

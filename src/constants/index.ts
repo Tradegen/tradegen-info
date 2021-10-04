@@ -9,7 +9,8 @@ export const ALL_MAINNET_TOKENS = [UbeswapDefaultTokenList, UbeswapExperimentalT
 
 export const ALL_MAINNET_TOKENS_MAP: Record<string, TokenInfo> = keyBy(ALL_MAINNET_TOKENS, (tok) => tok.address)
 
-export const FACTORY_ADDRESS = '0x62d5b84bE28a183aBB507E125B384122D2C25fAE'
+export const FACTORY_ADDRESS = '0x62d5b84bE28a183aBB507E125B384122D2C25fAE' //Ubeswap
+export const ADDRESS_RESOLVER_ADDRESS = '0x32432FFE7E23885DF303eA41ECEe1e31aC8652a2' //Tradegen address resolver contract
 
 export const BUNDLE_ID = '1'
 

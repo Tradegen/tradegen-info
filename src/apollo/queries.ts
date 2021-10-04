@@ -36,9 +36,8 @@ export const GET_BLOCK = gql`
 export const GET_BLOCKS = (timestamps: readonly number[]): DocumentNode => {
   let queryString = 'query blocks {'
   queryString += timestamps.map((timestamp) => {
-    return `t${timestamp}:blocks(first: 1, orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: ${timestamp}, timestamp_lt: ${
-      timestamp + 600
-    } }) {
+    return `t${timestamp}:blocks(first: 1, orderBy: timestamp, orderDirection: desc, where: { timestamp_gt: ${timestamp}, timestamp_lt: ${timestamp + 600
+      } }) {
       number
     }`
   })
@@ -834,6 +833,32 @@ export const FILTERED_TRANSACTIONS = gql`
       amount1Out
       amountUSD
       to
+    }
+  }
+`
+
+export const GLOBAL_DATA_TRADEGEN_LATEST = gql`
+  query GlobalDataTradegenLatest($addressResolverAddress: ID!) {
+    tradegens(where: { id: $addressResolverAddress }) {
+      id
+      totalVolumeUSD
+      totalValueLockedUSD
+      txCount
+      poolCount
+      NFTPoolCount
+    }
+  }
+`
+
+export const GLOBAL_DATA_TRADEGEN = gql`
+  query GlobalDataTradegen($block: Int!, $addressResolverAddress: ID!) {
+    tradegens(block: { number: $block }, where: { id: $addressResolverAddress }) {
+      id
+      totalVolumeUSD
+      totalValueLockedUSD
+      txCount
+      poolCount
+      NFTPoolCount
     }
   }
 `
