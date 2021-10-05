@@ -11,6 +11,7 @@ import GlobalDataContextProvider from './contexts/GlobalData'
 import LocalStorageContextProvider, { Updater as LocalStorageContextUpdater } from './contexts/LocalStorage'
 import PairDataContextProvider, { Updater as PairDataContextUpdater } from './contexts/PairData'
 import TokenDataContextProvider, { Updater as TokenDataContextUpdater } from './contexts/TokenData'
+import PoolDataContextProvider, { Updater as PoolDataContextUpdater } from './contexts/PoolData'
 import UserContextProvider from './contexts/User'
 import ThemeProvider, { GlobalStyle } from './Theme'
 
@@ -29,8 +30,8 @@ if (typeof GOOGLE_ANALYTICS_ID === 'string') {
     customBrowserType: !isMobile
       ? 'desktop'
       : 'web3' in window || 'ethereum' in window
-      ? 'mobileWeb3'
-      : 'mobileRegular',
+        ? 'mobileWeb3'
+        : 'mobileRegular',
   })
 } else {
   ReactGA.initialize('test', { testMode: true, debug: true })
@@ -39,9 +40,8 @@ if (typeof GOOGLE_ANALYTICS_ID === 'string') {
 if (process.env.REACT_APP_SENTRY_DSN) {
   const sentryCfg = {
     environment: `${process.env.REACT_APP_VERCEL_ENV ?? 'unknown'}`,
-    release: `${process.env.REACT_APP_VERCEL_GIT_COMMIT_REF?.replace(/\//g, '--') ?? 'unknown'}-${
-      process.env.REACT_APP_VERCEL_GIT_COMMIT_SHA ?? 'unknown'
-    }`,
+    release: `${process.env.REACT_APP_VERCEL_GIT_COMMIT_REF?.replace(/\//g, '--') ?? 'unknown'}-${process.env.REACT_APP_VERCEL_GIT_COMMIT_SHA ?? 'unknown'
+      }`,
   }
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
@@ -59,11 +59,13 @@ function ContextProviders({ children }: { children: React.ReactNode }) {
     <LocalStorageContextProvider>
       <ApplicationContextProvider>
         <TokenDataContextProvider>
-          <GlobalDataContextProvider>
-            <PairDataContextProvider>
-              <UserContextProvider>{children}</UserContextProvider>
-            </PairDataContextProvider>
-          </GlobalDataContextProvider>
+          <PoolDataContextProvider>
+            <GlobalDataContextProvider>
+              <PairDataContextProvider>
+                <UserContextProvider>{children}</UserContextProvider>
+              </PairDataContextProvider>
+            </GlobalDataContextProvider>
+          </PoolDataContextProvider>
         </TokenDataContextProvider>
       </ApplicationContextProvider>
     </LocalStorageContextProvider>
@@ -76,6 +78,7 @@ function Updaters() {
       <LocalStorageContextUpdater />
       <PairDataContextUpdater />
       <TokenDataContextUpdater />
+      <PoolDataContextUpdater />
     </>
   )
 }

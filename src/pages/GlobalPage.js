@@ -19,7 +19,8 @@ import TxnList from '../components/TxnList'
 import { useGlobalData, useGlobalTransactions } from '../contexts/GlobalData'
 import { useDarkModeManager } from '../contexts/LocalStorage'
 import { useAllPairData } from '../contexts/PairData'
-import { useAllTokenData } from '../contexts/TokenData'
+//import { useAllTokenData } from '../contexts/TokenData'
+import { useAllPoolData } from '../contexts/PoolData'
 import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent } from '../utils'
 
@@ -46,10 +47,13 @@ const GridRow = styled.div`
 function GlobalPage() {
   // get data for lists and totals
   const allPairs = useAllPairData()
-  const allTokens = useAllTokenData()
+  const allTokens = []//useAllTokenData()
+  const allPools = useAllPoolData()
   const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
   const [darkMode] = useDarkModeManager()
+
+  console.log(allPools)
 
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')

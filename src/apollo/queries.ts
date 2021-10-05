@@ -45,6 +45,23 @@ export const GET_BLOCKS = (timestamps: readonly number[]): DocumentNode => {
   return gql(queryString)
 }
 
+export const PRICES_BY_BLOCK = (
+  poolAddress: string,
+  blocks: readonly { timestamp: number; number: number }[]
+): DocumentNode => {
+  let queryString = 'query pricesByBlockPool {'
+  queryString += blocks.map(
+    (block) => `
+      t${block.timestamp}:pool(id:"${poolAddress}", block: { number: ${block.number} }) { 
+        tokenPrice
+      }
+    `
+  )
+
+  queryString += '}'
+  return gql(queryString)
+}
+
 export const POSITIONS_BY_BLOCK = (account, blocks) => {
   let queryString = 'query positionsByBlock {'
   queryString += blocks.map(
@@ -63,23 +80,32 @@ export const POSITIONS_BY_BLOCK = (account, blocks) => {
   return gql(queryString)
 }
 
-export const PRICES_BY_BLOCK = (
-  tokenAddress: string,
+export const PRICES_BY_BLOCK_POOL = (
+  poolAddress: string,
   blocks: readonly { timestamp: number; number: number }[]
 ): DocumentNode => {
-  let queryString = 'query pricesByBlock {'
+  let queryString = 'query pricesByBlockPool {'
   queryString += blocks.map(
     (block) => `
-      t${block.timestamp}:token(id:"${tokenAddress}", block: { number: ${block.number} }) { 
-        derivedCUSD
+      t${block.timestamp}:pool(id:"${poolAddress}", block: { number: ${block.number} }) { 
+        tokenPrice
       }
     `
   )
-  queryString += ','
+
+  queryString += '}'
+  return gql(queryString)
+}
+
+export const PRICES_BY_BLOCK_NFT_POOL = (
+  NFTPoolAddress: string,
+  blocks: readonly { timestamp: number; number: number }[]
+): DocumentNode => {
+  let queryString = 'query pricesByBlockNFTPool {'
   queryString += blocks.map(
     (block) => `
-      b${block.timestamp}: bundle(id:"1", block: { number: ${block.number} }) { 
-        celoPrice
+      t${block.timestamp}:NFTPool(id:"${NFTPoolAddress}", block: { number: ${block.number} }) { 
+        tokenPrice
       }
     `
   )
@@ -871,6 +897,137 @@ export const GLOBAL_CHART_TRADEGEN = gql`
       totalVolumeUSD
       dailyVolumeUSD
       totalValueLockedUSD
+    }
+  }
+`
+
+const PoolFields = gql`
+  fragment PoolFields on Pool {
+    id
+    name
+    manager
+    performanceFee
+    tokenPrice
+    totalSupply
+    tradeVolumeUSD
+    totalValueLockedUSD
+  }
+`
+
+export const POOLS_CURRENT = gql`
+  ${PoolFields}
+  query PoolsCurrent {
+    pools(first: 200, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      ...PoolFields
+    }
+  }
+`
+
+export const POOLS_DYNAMIC = gql`
+  query PoolsDynamic($block: Int!) {
+    pools(block: { number: $block }, first: 200, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      ...PoolFields
+    }
+  }
+  ${PoolFields}
+`
+
+export const POOL_DATA_LATEST = gql`
+  query PoolDataLatest($poolAddressID: ID!) {
+    pools(where: { id: $poolAddressID }) {
+      ...PoolFields
+    }
+  }
+  ${PoolFields}
+`
+
+export const POOL_DATA = gql`
+  query PoolData($block: Int, $poolAddressID: ID!) {
+    pools(block: { number: $block }, where: { id: $poolAddressID }) {
+      ...PoolFields
+    }
+  }
+  ${PoolFields}
+`
+
+export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
+  query FilteredTransactionsTradegen($allPools: [String!]!, $allNFTPools: [String!]!) {
+    depositPools(first: 20, where: { poolAddress_in: $allPools }, orderBy: timestamp, orderDirection: desc) {
+      poolTransaction {
+        id
+        timestamp
+      }
+      userAddress
+      amount
+    }
+    withdrawPools(first: 20, where: { poolAddress_in: $allPools }, orderBy: timestamp, orderDirection: desc) {
+      poolTransaction {
+        id
+        timestamp
+      }
+      userAddress
+      tokenAmount
+      USDAmount
+    }
+    mintFeePools(first: 20, where: { poolAddress_in: $allPools }, orderBy: timestamp, orderDirection: desc) {
+      poolTransaction {
+        id
+        timestamp
+      }
+      managerAddress
+      feesMinted
+    }
+    depositNFTPools(first: 20, where: { NFTPoolAddress_in: $allNFTPools }, orderBy: timestamp, orderDirection: desc) {
+      NFTPoolTransaction {
+        id
+        timestamp
+      }
+      userAddress
+      tokenAmount
+      USDAmount
+    }
+    withdrawNFTPools(first: 20, where: { NFTPoolAddress_in: $allNFTPools }, orderBy: timestamp, orderDirection: desc) {
+      NFTPoolTransaction {
+        id
+        timestamp
+      }
+      userAddress
+      tokenAmount
+      USDAmount
+    }
+  }
+`
+
+export const POOL_CHART = gql`
+  query PoolDayDatas($poolAddress: String!, $skip: Int!) {
+    poolDayDatas(first: 1000, skip: $skip, orderBy: date, orderDirection: asc, where: { pool: $poolAddress }) {
+      id
+      date
+      priceUSD
+      totalValueLockedUSD
+      dailyVolumeUSD
+      dailyTxns
+      totalSupply
+      pool {
+        id
+      }
+    }
+  }
+`
+
+export const NFT_POOL_CHART = gql`
+  query NFTPoolDayDatas($NFTPoolAddress: String!, $skip: Int!) {
+    nftpoolDayDatas(first: 1000, skip: $skip, orderBy: date, orderDirection: asc, where: { NFTPool: $NFTPoolAddress }) {
+      id
+      date
+      priceUSD
+      totalValueLockedUSD
+      dailyVolumeUSD
+      dailyTxns
+      totalSupply
+      NFTPool {
+        id
+      }
     }
   }
 `
