@@ -12,6 +12,7 @@ import LocalStorageContextProvider, { Updater as LocalStorageContextUpdater } fr
 import PairDataContextProvider, { Updater as PairDataContextUpdater } from './contexts/PairData'
 import TokenDataContextProvider, { Updater as TokenDataContextUpdater } from './contexts/TokenData'
 import PoolDataContextProvider, { Updater as PoolDataContextUpdater } from './contexts/PoolData'
+import NFTPoolDataContextProvider, { Updater as NFTPoolDataContextUpdater } from './contexts/NFTPoolData'
 import UserContextProvider from './contexts/User'
 import ThemeProvider, { GlobalStyle } from './Theme'
 
@@ -60,11 +61,13 @@ function ContextProviders({ children }: { children: React.ReactNode }) {
       <ApplicationContextProvider>
         <TokenDataContextProvider>
           <PoolDataContextProvider>
-            <GlobalDataContextProvider>
-              <PairDataContextProvider>
-                <UserContextProvider>{children}</UserContextProvider>
-              </PairDataContextProvider>
-            </GlobalDataContextProvider>
+            <NFTPoolDataContextProvider>
+              <GlobalDataContextProvider>
+                <PairDataContextProvider>
+                  <UserContextProvider>{children}</UserContextProvider>
+                </PairDataContextProvider>
+              </GlobalDataContextProvider>
+            </NFTPoolDataContextProvider>
           </PoolDataContextProvider>
         </TokenDataContextProvider>
       </ApplicationContextProvider>
@@ -79,6 +82,7 @@ function Updaters() {
       <PairDataContextUpdater />
       <TokenDataContextUpdater />
       <PoolDataContextUpdater />
+      <NFTPoolDataContextUpdater />
     </>
   )
 }

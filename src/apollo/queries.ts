@@ -1031,3 +1031,54 @@ export const NFT_POOL_CHART = gql`
     }
   }
 `
+
+const NFTPoolFields = gql`
+  fragment NFTPoolFields on NFTPool {
+    id
+    name
+    manager
+    maxSupply
+    seedPrice
+    tokenPrice
+    totalSupply
+    tradeVolumeUSD
+    totalValueLockedUSD
+    feesCollected
+  }
+`
+
+export const NFT_POOLS_CURRENT = gql`
+  ${NFTPoolFields}
+  query NFTPoolsCurrent {
+    nftpools(first: 200, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      ...NFTPoolFields
+    }
+  }
+`
+
+export const NFT_POOLS_DYNAMIC = gql`
+  query NFTPoolsDynamic($block: Int!) {
+    nftpools(block: { number: $block }, first: 200, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      ...NFTPoolFields
+    }
+  }
+  ${NFTPoolFields}
+`
+
+export const NFT_POOL_DATA_LATEST = gql`
+  query NFTPoolDataLatest($NFTPoolAddressID: ID!) {
+    nftpools(where: { id: $NFTPoolAddressID }) {
+      ...NFTPoolFields
+    }
+  }
+  ${NFTPoolFields}
+`
+
+export const NFT_POOL_DATA = gql`
+  query NFTPoolData($block: Int, $NFTPoolAddressID: ID!) {
+    nftpools(block: { number: $block }, where: { id: $NFTPoolAddressID }) {
+      ...NFTPoolFields
+    }
+  }
+  ${NFTPoolFields}
+`
