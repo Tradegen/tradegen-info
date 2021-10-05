@@ -15,6 +15,7 @@ import Panel from '../components/Panel'
 import { AutoRow, RowBetween } from '../components/Row'
 import Search from '../components/Search'
 import TopTokenList from '../components/TokenList'
+import TopPoolList from '../components/PoolList'
 import TxnList from '../components/TxnList'
 import { useGlobalData, useGlobalTransactions } from '../contexts/GlobalData'
 import { useDarkModeManager } from '../contexts/LocalStorage'
@@ -139,7 +140,7 @@ function GlobalPage() {
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <TopTokenList tokens={allTokens} />
+            <TopPoolList pools={allPools} />
           </Panel>
           <ListOptions gap="10px" style={{ marginTop: '2rem', marginBottom: '.5rem' }}>
             <RowBetween>
