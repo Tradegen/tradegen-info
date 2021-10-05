@@ -6,6 +6,7 @@ import { timeframeOptions } from '../../constants'
 import { useGlobalChartData, useGlobalData } from '../../contexts/GlobalData'
 import { TYPE } from '../../Theme'
 import { getTimeframe } from '../../utils'
+import { toBigDecimal } from '../../utils/typeAssertions'
 import { OptionButton } from '../ButtonStyled'
 import DropdownSelect from '../DropdownSelect'
 import { RowFixed } from '../Row'
@@ -31,10 +32,10 @@ const GlobalChart = ({ display }) => {
   // global historical data
   const [dailyData, weeklyData] = useGlobalChartData()
   const {
-    totalLiquidityUSD,
+    totalValueLockedUSD,
     oneDayVolumeUSD,
     volumeChangeUSD,
-    liquidityChangeUSD,
+    totalValueLockedChangeUSD,
     oneWeekVolumeUSD,
     weeklyVolumeChange,
   } = useGlobalData()
@@ -87,10 +88,10 @@ const GlobalChart = ({ display }) => {
         <ResponsiveContainer aspect={60 / 28} ref={ref}>
           <TradingViewChart
             data={dailyData}
-            base={totalLiquidityUSD}
-            baseChange={liquidityChangeUSD}
+            base={totalValueLockedUSD / toBigDecimal("1e18")}
+            baseChange={totalValueLockedChangeUSD}
             title="Total Value Locked"
-            field="totalLiquidityUSD"
+            field="totalValueLockedUSD"
             width={width}
             type={CHART_TYPES.AREA}
           />
@@ -100,7 +101,7 @@ const GlobalChart = ({ display }) => {
         <ResponsiveContainer aspect={60 / 28}>
           <TradingViewChart
             data={chartDataFiltered}
-            base={volumeWindow === VOLUME_WINDOW.WEEKLY ? oneWeekVolumeUSD : oneDayVolumeUSD}
+            base={volumeWindow === VOLUME_WINDOW.WEEKLY ? (oneWeekVolumeUSD ?? 0) : (oneDayVolumeUSD ?? 0)}
             baseChange={volumeWindow === VOLUME_WINDOW.WEEKLY ? weeklyVolumeChange : volumeChangeUSD}
             title={volumeWindow === VOLUME_WINDOW.WEEKLY ? 'Volume (7d)' : 'Volume'}
             field={volumeWindow === VOLUME_WINDOW.WEEKLY ? 'weeklyVolumeUSD' : 'dailyVolumeUSD'}

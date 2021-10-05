@@ -33,7 +33,7 @@ export default function GlobalStats() {
         <RowFixed>
           {!below400 && (
             <TYPE.main mr={'1rem'} style={{ position: 'relative' }}>
-              TGEN Price: <Medium>{formattedCeloPrice}</Medium>
+              CELO Price: <Medium>{formattedCeloPrice}</Medium>
             </TYPE.main>
           )}
 

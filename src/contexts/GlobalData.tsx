@@ -31,7 +31,8 @@ import {
   GLOBAL_TXNS,
   TOP_LPS_PER_PAIRS,
   GLOBAL_DATA_TRADEGEN,
-  GLOBAL_DATA_TRADEGEN_LATEST
+  GLOBAL_DATA_TRADEGEN_LATEST,
+  GLOBAL_CHART_TRADEGEN
 } from '../apollo/queries'
 import { FACTORY_ADDRESS, ADDRESS_RESOLVER_ADDRESS } from '../constants'
 import {
@@ -41,6 +42,7 @@ import {
   getPercentChange,
   getTimeframe,
 } from '../utils'
+import { toBigDecimal } from '../utils/typeAssertions'
 import { useTimeframe } from './Application'
 import { useAllPairData } from './PairData'
 import { useTokenChartDataCombined } from './TokenData'
@@ -441,8 +443,8 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
 
   try {
     while (!allFound) {
-      const result = await client.query({
-        query: GLOBAL_CHART,
+      const result = await tradegenClient.query({
+        query: GLOBAL_CHART_TRADEGEN,
         variables: {
           startTime: oldestDateToFetch,
           skip,
@@ -450,8 +452,8 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
         fetchPolicy: 'cache-first',
       })
       skip += 1000
-      data = data.concat(result.data.ubeswapDayDatas)
-      if (result.data.ubeswapDayDatas.length < 1000) {
+      data = data.concat(result.data.tradegenDayDatas)
+      if (result.data.tradegenDayDatas.length < 1000) {
         allFound = true
       }
     }
@@ -466,12 +468,13 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
         // add the day index to the set of days
         dayIndexSet.add((data[i].date / oneDay).toFixed(0))
         dayIndexArray.push(data[i])
-        dayData.dailyVolumeUSD = parseFloat(dayData.dailyVolumeUSD)
+        dayData.dailyVolumeUSD = parseFloat((BigInt(dayData.dailyVolumeUSD.toString()) / BigInt("1000000000000000000")).toString())
+        dayData.totalValueLockedUSD = parseFloat((BigInt(dayData.totalValueLockedUSD.toString()) / BigInt("1000000000000000000")).toString())
       })
 
       // fill in empty days ( there will be no day datas if no trades made that day )
       let timestamp = data[0].date ? data[0].date : oldestDateToFetch
-      let latestLiquidityUSD = data[0].totalLiquidityUSD
+      let latestValueLockedUSD = data[0].totalValueLockedUSD
       let latestDayDats = data[0].mostLiquidTokens
       let index = 1
       while (timestamp < utcEndTime.unix() - oneDay) {
@@ -482,11 +485,11 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
           data.push({
             date: nextDay,
             dailyVolumeUSD: 0,
-            totalLiquidityUSD: latestLiquidityUSD,
+            totalValueLockedUSD: latestValueLockedUSD,
             mostLiquidTokens: latestDayDats,
           })
         } else {
-          latestLiquidityUSD = dayIndexArray[index].totalLiquidityUSD
+          latestValueLockedUSD = dayIndexArray[index].totalValueLockedUSD
           latestDayDats = dayIndexArray[index].mostLiquidTokens
           index = index + 1
         }
@@ -506,7 +509,7 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
       offsetData &&
         offsetData.map((dayData) => {
           if (dayData[date]) {
-            data[i].dailyVolumeUSD = data[i].dailyVolumeUSD - dayData.dailyVolumeUSD
+            data[i].dailyVolumeUSD = parseFloat((BigInt((data[i].dailyVolumeUSD - dayData.dailyVolumeUSD).toString()) / BigInt("1000000000000000000")).toString())
           }
           return true
         })
@@ -519,7 +522,8 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
       weeklyData[startIndexWeekly] = weeklyData[startIndexWeekly] || {}
       weeklyData[startIndexWeekly].date = data[i].date
       weeklyData[startIndexWeekly].weeklyVolumeUSD =
-        (weeklyData[startIndexWeekly].weeklyVolumeUSD ?? 0) + data[i].dailyVolumeUSD
+        (weeklyData[startIndexWeekly].weeklyVolumeUSD ? parseFloat((BigInt(weeklyData[startIndexWeekly].weeklyVolumeUSD.toString()) / BigInt("1000000000000000000")).toString()) : 0)
+        + parseFloat(data[i].dailyVolumeUSD.toString())
     })
 
     if (!checked) {
@@ -684,6 +688,8 @@ export function useGlobalData(): Partial<IGlobalDataTradegen> {
 
   const fetchData = useCallback(async () => {
     const globalDataTradegen = await getGlobalDataTradegen()
+
+    console.log(globalDataTradegen)
 
     if (globalDataTradegen) {
       updateTradegen(globalDataTradegen)
@@ -884,6 +890,8 @@ async function getGlobalDataTradegen(): Promise<IGlobalDataTradegen | null> {
       utcOneWeekBack,
       utcTwoWeeksBack,
     ])
+
+    console.log(oneDayBlock)
 
     // fetch the global data
     const result = await tradegenClient.query<GlobalDataTradegenLatestQuery, GlobalDataTradegenLatestQueryVariables>({

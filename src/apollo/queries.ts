@@ -862,3 +862,15 @@ export const GLOBAL_DATA_TRADEGEN = gql`
     }
   }
 `
+
+export const GLOBAL_CHART_TRADEGEN = gql`
+  query TradegenDayDatas($startTime: Int!, $skip: Int!) {
+    tradegenDayDatas(first: 1000, skip: $skip, where: { date_gt: $startTime }, orderBy: date, orderDirection: asc) {
+      id
+      date
+      totalVolumeUSD
+      dailyVolumeUSD
+      totalValueLockedUSD
+    }
+  }
+`
