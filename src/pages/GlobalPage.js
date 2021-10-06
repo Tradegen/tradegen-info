@@ -10,18 +10,16 @@ import { AutoColumn } from '../components/Column'
 import GlobalChart from '../components/GlobalChart'
 import GlobalStats from '../components/GlobalStats'
 import { CustomLink } from '../components/Link'
-import PairList from '../components/PairList'
 import Panel from '../components/Panel'
 import { AutoRow, RowBetween } from '../components/Row'
 import Search from '../components/Search'
-import TopTokenList from '../components/TokenList'
 import TopPoolList from '../components/PoolList'
+import TopNFTPoolList from '../components/NFTPoolList'
 import TxnList from '../components/TxnList'
 import { useGlobalData, useGlobalTransactions } from '../contexts/GlobalData'
 import { useDarkModeManager } from '../contexts/LocalStorage'
-import { useAllPairData } from '../contexts/PairData'
-//import { useAllTokenData } from '../contexts/TokenData'
 import { useAllPoolData } from '../contexts/PoolData'
+import { useAllNFTPoolData } from '../contexts/NFTPoolData'
 import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent } from '../utils'
 
@@ -47,14 +45,14 @@ const GridRow = styled.div`
 
 function GlobalPage() {
   // get data for lists and totals
-  const allPairs = useAllPairData()
-  const allTokens = []//useAllTokenData()
   const allPools = useAllPoolData()
+  const allNFTPools = useAllNFTPoolData()
   const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
   const [darkMode] = useDarkModeManager()
 
   console.log(allPools)
+  console.log(allNFTPools)
 
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
@@ -149,7 +147,7 @@ function GlobalPage() {
             </RowBetween>
           </ListOptions>
           <Panel style={{ marginTop: '6px', padding: '1.125rem 0 ' }}>
-            <PairList pairs={allPairs} useTracked={true} />
+            <TopNFTPoolList NFTPools={allNFTPools} useTracked={true} />
           </Panel>
           <span>
             <TYPE.main fontSize={'1.125rem'} style={{ marginTop: '2rem' }}>
