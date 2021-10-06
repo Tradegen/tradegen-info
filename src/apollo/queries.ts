@@ -1087,29 +1087,39 @@ export const GLOBAL_TXNS_TRADEGEN = gql`
   query GlobalTransactionsTradegen {
     poolTransactions(first: 100, orderBy: timestamp, orderDirection: desc) {
       deposit {
-        poolTransaction {
-          id
-          timestamp
-        }
         userAddress
         amount
-      }
-      withdraw {
         poolTransaction {
           id
           timestamp
+          pool {
+            name
+          }
         }
+      }
+      withdraw {
         userAddress
         tokenAmount
         USDAmount
-      }
-      mintFee {
         poolTransaction {
           id
           timestamp
+          pool {
+            name
+          }
         }
+      }
+      mintFee {
         managerAddress
         feesMinted
+        poolTransaction {
+          id
+          timestamp
+          pool {
+            name
+            tokenPrice
+          }
+        }
       }
     }
     nftpoolTransactions(first: 100, orderBy: timestamp, orderDirection: desc) {
@@ -1117,6 +1127,9 @@ export const GLOBAL_TXNS_TRADEGEN = gql`
         NFTPoolTransaction {
           id
           timestamp
+          NFTPool {
+            name
+          }
         }
         userAddress
         tokenAmount
@@ -1126,6 +1139,9 @@ export const GLOBAL_TXNS_TRADEGEN = gql`
         NFTPoolTransaction {
           id
           timestamp
+          NFTPool {
+            name
+          }
         }
         userAddress
         tokenAmount

@@ -8,10 +8,8 @@ import styled from 'styled-components'
 import { useCurrentCurrency } from '../../contexts/Application'
 import { TYPE } from '../../Theme'
 import { formattedNum, formatTime, urls } from '../../utils'
-import { updateNameData } from '../../utils/data'
 import { Divider, EmptyCard } from '..'
 import DropdownSelect from '../DropdownSelect'
-import FormattedName from '../FormattedName'
 import Link from '../Link'
 import LocalLoader from '../LocalLoader'
 import { RowBetween, RowFixed } from '../Row'
@@ -79,7 +77,7 @@ const DashGrid = styled.div`
 
   @media screen and (min-width: 1080px) {
     max-width: 1320px;
-    grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr;
     grid-template-areas: 'txn value amountToken amountOther account time';
   }
 `
@@ -131,37 +129,36 @@ const SortText = styled.button`
 
 const SORT_FIELD = {
   VALUE: 'amountUSD',
-  AMOUNT0: 'token0Amount',
-  AMOUNT1: 'token1Amount',
+  NAME: 'name',
   TIMESTAMP: 'timestamp',
+  TYPE: 'investmentType'
 }
 
 const TXN_TYPE = {
   ALL: 'All',
-  SWAP: 'Swaps',
-  ADD: 'Adds',
-  REMOVE: 'Removes',
+  DEPOSIT: 'Deposits',
+  WITHDRAW: 'Withdraws',
+  MINT: 'Mint Fees',
 }
 
 const ITEMS_PER_PAGE = 10
 
-function getTransactionType(event, symbol0, symbol1) {
-  const formattedS0 = symbol0?.length > 8 ? symbol0.slice(0, 7) + '...' : symbol0
-  const formattedS1 = symbol1?.length > 8 ? symbol1.slice(0, 7) + '...' : symbol1
+function getTransactionType(event, name) {
+  const formattedName = name?.length > 20 ? name.slice(0, 19) + '...' : name
   switch (event) {
-    case TXN_TYPE.ADD:
-      return 'Add ' + formattedS0 + ' and ' + formattedS1
-    case TXN_TYPE.REMOVE:
-      return 'Remove ' + formattedS0 + ' and ' + formattedS1
-    case TXN_TYPE.SWAP:
-      return 'Swap ' + formattedS0 + ' for ' + formattedS1
+    case TXN_TYPE.DEPOSIT:
+      return 'Deposit into ' + formattedName
+    case TXN_TYPE.WITHDRAW:
+      return 'Withdraw from ' + formattedName
+    case TXN_TYPE.MINT:
+      return 'Mint fees for ' + formattedName
     default:
       return ''
   }
 }
 
 // @TODO rework into virtualized list
-function TxnList({ transactions, symbol0Override, symbol1Override, color }) {
+function TxnList({ transactions, nameOverride, color }) {
   // page state
   const [page, setPage] = useState(1)
   const [maxPage, setMaxPage] = useState(1)
@@ -172,7 +169,7 @@ function TxnList({ transactions, symbol0Override, symbol1Override, color }) {
   const [filteredItems, setFilteredItems] = useState()
   const [txFilter, setTxFilter] = useState(TXN_TYPE.ALL)
 
-  const [currency] = useCurrentCurrency()
+  console.log(transactions)
 
   useEffect(() => {
     setMaxPage(1) // edit this to do modular
@@ -181,63 +178,72 @@ function TxnList({ transactions, symbol0Override, symbol1Override, color }) {
 
   // parse the txns and format for UI
   useEffect(() => {
-    if (transactions && transactions.mints && transactions.burns && transactions.swaps) {
+    if (transactions && transactions.depositPools && transactions.withdrawPools && transactions.mintFeePools && transactions.depositNFTPools && transactions.withdrawNFTPools) {
       let newTxns = []
-      if (transactions.mints.length > 0) {
-        transactions.mints.map((mint) => {
+      //Pools
+      if (transactions.depositPools.length > 0) {
+        transactions.depositPools.map((deposit) => {
           let newTxn = {}
-          newTxn.hash = mint.transaction.id
-          newTxn.timestamp = mint.transaction.timestamp
-          newTxn.type = TXN_TYPE.ADD
-          newTxn.token0Amount = mint.amount0
-          newTxn.token1Amount = mint.amount1
-          newTxn.account = mint.to
-          newTxn.token0Symbol = updateNameData(mint.pair).token0.symbol
-          newTxn.token1Symbol = updateNameData(mint.pair).token1.symbol
-          newTxn.amountUSD = mint.amountUSD
+          newTxn.hash = deposit.poolTransaction.id
+          newTxn.timestamp = deposit.poolTransaction.timestamp
+          newTxn.type = TXN_TYPE.DEPOSIT
+          newTxn.investmentType = "Pool"
+          newTxn.account = deposit.userAddress
+          newTxn.amountUSD = deposit.amount
+          newTxn.name = deposit.poolTransaction.pool.name
           return newTxns.push(newTxn)
         })
       }
-      if (transactions.burns.length > 0) {
-        transactions.burns.map((burn) => {
+      if (transactions.withdrawPools.length > 0) {
+        transactions.withdrawPools.map((withdraw) => {
           let newTxn = {}
-          newTxn.hash = burn.transaction.id
-          newTxn.timestamp = burn.transaction.timestamp
-          newTxn.type = TXN_TYPE.REMOVE
-          newTxn.token0Amount = burn.amount0
-          newTxn.token1Amount = burn.amount1
-          newTxn.account = burn.sender
-          newTxn.token0Symbol = updateNameData(burn.pair).token0.symbol
-          newTxn.token1Symbol = updateNameData(burn.pair).token1.symbol
-          newTxn.amountUSD = burn.amountUSD
+          newTxn.hash = withdraw.poolTransaction.id
+          newTxn.timestamp = withdraw.poolTransaction.timestamp
+          newTxn.type = TXN_TYPE.WITHDRAW
+          newTxn.investmentType = "Pool"
+          newTxn.account = withdraw.userAddress
+          newTxn.amountUSD = withdraw.USDAmount
+          newTxn.name = withdraw.poolTransaction.pool.name
           return newTxns.push(newTxn)
         })
       }
-      if (transactions.swaps.length > 0) {
-        transactions.swaps.map((swap) => {
-          const netToken0 = swap.amount0In - swap.amount0Out
-          const netToken1 = swap.amount1In - swap.amount1Out
-
+      if (transactions.mintFeePools.length > 0) {
+        transactions.mintFeePools.map((mint) => {
           let newTxn = {}
-
-          if (netToken0 < 0) {
-            newTxn.token0Symbol = updateNameData(swap.pair).token0.symbol
-            newTxn.token1Symbol = updateNameData(swap.pair).token1.symbol
-            newTxn.token0Amount = Math.abs(netToken0)
-            newTxn.token1Amount = Math.abs(netToken1)
-          } else if (netToken1 < 0) {
-            newTxn.token0Symbol = updateNameData(swap.pair).token1.symbol
-            newTxn.token1Symbol = updateNameData(swap.pair).token0.symbol
-            newTxn.token0Amount = Math.abs(netToken1)
-            newTxn.token1Amount = Math.abs(netToken0)
-          }
-
-          newTxn.hash = swap.transaction.id
-          newTxn.timestamp = swap.transaction.timestamp
-          newTxn.type = TXN_TYPE.SWAP
-
-          newTxn.amountUSD = swap.amountUSD
-          newTxn.account = swap.to
+          newTxn.hash = mint.poolTransaction.id
+          newTxn.timestamp = mint.poolTransaction.timestamp
+          newTxn.type = TXN_TYPE.MINT
+          newTxn.investmentType = "Pool"
+          newTxn.account = mint.managerAddress
+          newTxn.amountUSD = mint.feesMinted * mint.tokenPrice / BigInt("1000000000000000000")
+          newTxn.name = mint.poolTransaction.pool.name
+          return newTxns.push(newTxn)
+        })
+      }
+      //NFT Pools
+      if (transactions.depositNFTPools.length > 0) {
+        transactions.depositPools.map((deposit) => {
+          let newTxn = {}
+          newTxn.hash = deposit.nftpoolTransaction.id
+          newTxn.timestamp = deposit.nftpoolTransaction.timestamp
+          newTxn.type = TXN_TYPE.DEPOSIT
+          newTxn.investmentType = "NFT Pool"
+          newTxn.account = deposit.userAddress
+          newTxn.amountUSD = deposit.USDAmount
+          newTxn.name = deposit.nftpoolTransaction.NFTPool.name
+          return newTxns.push(newTxn)
+        })
+      }
+      if (transactions.withdrawNFTPools.length > 0) {
+        transactions.withdrawNFTPools.map((withdraw) => {
+          let newTxn = {}
+          newTxn.hash = withdraw.nftpoolTransaction.id
+          newTxn.timestamp = withdraw.nftpoolTransaction.timestamp
+          newTxn.type = TXN_TYPE.WITHDRAW
+          newTxn.investmentType = "NFT Pool"
+          newTxn.account = withdraw.userAddress
+          newTxn.amountUSD = withdraw.USDAmount
+          newTxn.name = withdraw.nftpoolTransaction.NFTPool.name
           return newTxns.push(newTxn)
         })
       }
@@ -283,24 +289,13 @@ function TxnList({ transactions, symbol0Override, symbol1Override, color }) {
       <DashGrid style={{ height: '48px' }}>
         <DataText area="txn" fontWeight="500">
           <Link color={color} external href={urls.showTransaction(item.hash)}>
-            {getTransactionType(item.type, item.token1Symbol, item.token0Symbol)}
+            {getTransactionType(item.type, item.name)}
           </Link>
         </DataText>
+        <DataText area="investmentType">{item.investmentType}</DataText>
         <DataText area="value">
-          {currency === 'ETH' ? 'Ξ ' + formattedNum(item.valueETH) : formattedNum(item.amountUSD, true)}
+          {formattedNum(parseFloat((BigInt(item.amountUSD.toString()) / BigInt("10000000000000000")).toString()) / 100, true)}
         </DataText>
-        {!below780 && (
-          <>
-            <DataText area="amountOther">
-              {formattedNum(item.token1Amount) + ' '}{' '}
-              <FormattedName text={item.token1Symbol} maxCharacters={5} margin={true} />
-            </DataText>
-            <DataText area="amountToken">
-              {formattedNum(item.token0Amount) + ' '}{' '}
-              <FormattedName text={item.token0Symbol} maxCharacters={5} margin={true} />
-            </DataText>
-          </>
-        )}
         {!below1080 && (
           <DataText area="account">
             <Link color={color} external href={'https://explorer.celo.org/address/' + item.account}>
@@ -332,31 +327,43 @@ function TxnList({ transactions, symbol0Override, symbol1Override, color }) {
             </SortText>
             <SortText
               onClick={() => {
-                setTxFilter(TXN_TYPE.SWAP)
+                setTxFilter(TXN_TYPE.DEPOSIT)
               }}
-              active={txFilter === TXN_TYPE.SWAP}
+              active={txFilter === TXN_TYPE.DEPOSIT}
             >
-              Swaps
+              Deposits
             </SortText>
             <SortText
               onClick={() => {
-                setTxFilter(TXN_TYPE.ADD)
+                setTxFilter(TXN_TYPE.WITHDRAW)
               }}
-              active={txFilter === TXN_TYPE.ADD}
+              active={txFilter === TXN_TYPE.WITHDRAW}
             >
-              Adds
+              Withdraws
             </SortText>
             <SortText
               onClick={() => {
-                setTxFilter(TXN_TYPE.REMOVE)
+                setTxFilter(TXN_TYPE.MINT)
               }}
-              active={txFilter === TXN_TYPE.REMOVE}
+              active={txFilter === TXN_TYPE.MINT}
             >
-              Removes
+              Mint Fees
             </SortText>
           </RowFixed>
         )}
 
+        <Flex alignItems="center" justifyContent="flexStart">
+          <ClickableText
+            color="textDim"
+            area="value"
+            onClick={(e) => {
+              setSortedColumn(SORT_FIELD.TYPE)
+              setSortDirection(sortedColumn !== SORT_FIELD.TYPE ? true : !sortDirection)
+            }}
+          >
+            Type {sortedColumn === SORT_FIELD.TYPE ? (!sortDirection ? '↑' : '↓') : ''}
+          </ClickableText>
+        </Flex>
         <Flex alignItems="center" justifyContent="flexStart">
           <ClickableText
             color="textDim"
@@ -369,37 +376,7 @@ function TxnList({ transactions, symbol0Override, symbol1Override, color }) {
             Total Value {sortedColumn === SORT_FIELD.VALUE ? (!sortDirection ? '↑' : '↓') : ''}
           </ClickableText>
         </Flex>
-        {!below780 && (
-          <Flex alignItems="center">
-            <ClickableText
-              area="amountToken"
-              color="textDim"
-              onClick={() => {
-                setSortedColumn(SORT_FIELD.AMOUNT0)
-                setSortDirection(sortedColumn !== SORT_FIELD.AMOUNT0 ? true : !sortDirection)
-              }}
-            >
-              {symbol0Override ? symbol0Override + ' Amount' : 'Token Amount'}{' '}
-              {sortedColumn === SORT_FIELD.AMOUNT0 ? (sortDirection ? '↑' : '↓') : ''}
-            </ClickableText>
-          </Flex>
-        )}
         <>
-          {!below780 && (
-            <Flex alignItems="center">
-              <ClickableText
-                area="amountOther"
-                color="textDim"
-                onClick={() => {
-                  setSortedColumn(SORT_FIELD.AMOUNT1)
-                  setSortDirection(sortedColumn !== SORT_FIELD.AMOUNT1 ? true : !sortDirection)
-                }}
-              >
-                {symbol1Override ? symbol1Override + ' Amount' : 'Token Amount'}{' '}
-                {sortedColumn === SORT_FIELD.AMOUNT1 ? (sortDirection ? '↑' : '↓') : ''}
-              </ClickableText>
-            </Flex>
-          )}
           {!below1080 && (
             <Flex alignItems="center">
               <TYPE.body area="account">Account</TYPE.body>

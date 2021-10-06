@@ -157,7 +157,7 @@ function GlobalPage() {
             </TYPE.main>
           </span>
           <Panel style={{ margin: '1rem 0' }}>
-            <TxnList transactions={transactions} />
+            <TxnList transactions={transactionsTradegen} />
           </Panel>
         </div>
       </ContentWrapper>
