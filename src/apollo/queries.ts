@@ -1106,6 +1106,7 @@ export const GLOBAL_TXNS_TRADEGEN = gql`
           timestamp
           pool {
             name
+            tokenPrice
           }
         }
       }

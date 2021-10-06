@@ -201,7 +201,7 @@ function TxnList({ transactions, nameOverride, color }) {
           newTxn.type = TXN_TYPE.WITHDRAW
           newTxn.investmentType = "Pool"
           newTxn.account = withdraw.userAddress
-          newTxn.amountUSD = withdraw.USDAmount
+          newTxn.amountUSD = BigInt(withdraw.tokenAmount) * BigInt(withdraw.poolTransaction.pool.tokenPrice) / BigInt("1000000000000000000")
           newTxn.name = withdraw.poolTransaction.pool.name
           return newTxns.push(newTxn)
         })
