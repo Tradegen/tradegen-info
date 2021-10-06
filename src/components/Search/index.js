@@ -4,12 +4,12 @@ import { Search as SearchIcon, X } from 'react-feather'
 import { useMedia } from 'react-use'
 import styled from 'styled-components'
 
-import { client } from '../../apollo/client'
-import { PAIR_SEARCH, TOKEN_SEARCH } from '../../apollo/queries'
+import { tradegenClient } from '../../apollo/client'
+import { POOL_SEARCH, NFT_POOL_SEARCH } from '../../apollo/queries'
 import { PAIR_BLACKLIST, TOKEN_BLACKLIST } from '../../constants'
-import { useAllPairsInUbeswap, useAllTokensInUbeswap } from '../../contexts/GlobalData'
-import { useAllPairData, usePairData } from '../../contexts/PairData'
-import { useAllTokenData, useTokenData } from '../../contexts/TokenData'
+import { useAllPoolsInTradegen, useAllNFTPoolsInTradegen } from '../../contexts/GlobalData'
+import { useAllPoolData, usePoolData } from '../../contexts/PoolData'
+import { useAllNFTPoolData, useNFTPoolData } from '../../contexts/NFTPoolData'
 import { TYPE } from '../../Theme'
 import { updateNameData } from '../../utils/data'
 import DoubleTokenLogo from '../DoubleLogo'
@@ -148,20 +148,23 @@ const Blue = styled.span`
 `
 
 export const Search = ({ small = false }) => {
-  let allTokens = useAllTokensInUbeswap()
-  const allTokenData = useAllTokenData()
+  let allPools = useAllPoolsInTradegen()
+  const allPoolData = useAllPoolData()
 
-  let allPairs = useAllPairsInUbeswap()
-  const allPairData = useAllPairData()
+  let allNFTPools = useAllNFTPoolsInTradegen()
+  const allNFTPoolData = useAllNFTPoolData()
+
+  console.log(allPoolData)
+  console.log(allNFTPoolData)
 
   const [showMenu, toggleMenu] = useState(false)
   const [value, setValue] = useState('')
   const [, toggleShadow] = useState(false)
   const [, toggleBottomShadow] = useState(false)
 
-  // fetch new data on tokens and pairs if needed
-  useTokenData(value)
-  usePairData(value)
+  // fetch new data on pools and NFT pools if needed
+  usePoolData(value)
+  useNFTPoolData(value)
 
   const below700 = useMedia('(max-width: 700px)')
   const below470 = useMedia('(max-width: 470px)')
@@ -175,36 +178,34 @@ export const Search = ({ small = false }) => {
     }
   }, [value])
 
-  const [searchedTokens, setSearchedTokens] = useState([])
-  const [searchedPairs, setSearchedPairs] = useState([])
+  const [searchedPools, setSearchedPools] = useState([])
+  const [searchedNFTPools, setSearchedNFTPools] = useState([])
 
   useEffect(() => {
     async function fetchData() {
       try {
         if (value?.length > 0) {
-          let tokens = await client.query({
-            query: TOKEN_SEARCH,
+          let pools = await tradegenClient.query({
+            query: POOL_SEARCH,
             variables: {
               value: value ? value.toUpperCase() : '',
               id: value,
             },
           })
 
-          let pairs = await client.query({
-            query: PAIR_SEARCH,
+          let NFTPools = await tradegenClient.query({
+            query: NFT_POOL_SEARCH,
             variables: {
-              tokens: tokens.data.asSymbol?.map((t) => t.id),
+              value: value ? value.toUpperCase() : '',
               id: value,
             },
           })
 
-          setSearchedPairs(
-            updateNameData(pairs.data.as0)
-              .concat(updateNameData(pairs.data.as1))
-              .concat(updateNameData(pairs.data.asAddress))
-          )
-          const foundTokens = tokens.data.asSymbol.concat(tokens.data.asAddress).concat(tokens.data.asName)
-          setSearchedTokens(foundTokens)
+          const foundPools = pools.data.asAddress.concat(pools.data.asName)
+          setSearchedPools(foundPools)
+
+          const foundNFTPools = NFTPools.data.asAddress.concat(NFTPools.data.asName)
+          setSearchedNFTPools(foundNFTPools)
         }
       } catch (e) {
         console.log(e)
@@ -217,13 +218,12 @@ export const Search = ({ small = false }) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
   }
 
-  // add the searched tokens to the list if not found yet
-  allTokens = allTokens.concat(
-    searchedTokens.filter((searchedToken) => {
+  // add the searched pools to the list if not found yet
+  allPools = allPools.concat(
+    searchedPools.filter((searchedPool) => {
       let included = false
-      updateNameData()
-      allTokens.map((token) => {
-        if (token.id === searchedToken.id) {
+      allPools.map((pool) => {
+        if (pool.id === searchedPool.id) {
           included = true
         }
         return true
@@ -232,163 +232,116 @@ export const Search = ({ small = false }) => {
     })
   )
 
-  let uniqueTokens = []
+  // add the searched NFT pools to the list if not found yet
+  allNFTPools = allNFTPools.concat(
+    searchedNFTPools.filter((searchedNFTPool) => {
+      let included = false
+      allNFTPools.map((NFTPool) => {
+        if (NFTPool.id === searchedNFTPool.id) {
+          included = true
+        }
+        return true
+      })
+      return !included
+    })
+  )
+
+  let uniquePools = []
   let found = {}
-  allTokens &&
-    allTokens.map((token) => {
-      if (!found[token.id]) {
-        found[token.id] = true
-        uniqueTokens.push(token)
+  allPools &&
+    allPools.map((pool) => {
+      if (pool && !found[pool.id]) {
+        found[pool.id] = true
+        uniquePools.push(pool)
       }
       return true
     })
 
-  allPairs = allPairs.concat(
-    searchedPairs.filter((searchedPair) => {
-      let included = false
-      allPairs.map((pair) => {
-        if (pair.id === searchedPair.id) {
-          included = true
-        }
-        return true
-      })
-      return !included
-    })
-  )
+  console.log(allPools)
 
-  let uniquePairs = []
-  let pairsFound = {}
-  allPairs &&
-    allPairs.map((pair) => {
-      if (!pairsFound[pair.id]) {
-        pairsFound[pair.id] = true
-        uniquePairs.push(pair)
+  let uniqueNFTPools = []
+  let found2 = {}
+  allNFTPools &&
+    allNFTPools.map((NFTPool) => {
+      if (NFTPool && !found2[NFTPool.id]) {
+        found2[NFTPool.id] = true
+        uniqueNFTPools.push(NFTPool)
       }
       return true
     })
 
-  const filteredTokenList = useMemo(() => {
-    return uniqueTokens
-      ? uniqueTokens
+  const filteredPoolList = useMemo(() => {
+    return uniquePools
+      ? uniquePools
         .sort((a, b) => {
-          const tokenA = allTokenData[a.id]
-          const tokenB = allTokenData[b.id]
-          if (tokenA?.oneDayVolumeUSD && tokenB?.oneDayVolumeUSD) {
-            return tokenA.oneDayVolumeUSD > tokenB.oneDayVolumeUSD ? -1 : 1
-          }
-          if (tokenA?.oneDayVolumeUSD && !tokenB?.oneDayVolumeUSD) {
-            return -1
-          }
-          if (!tokenA?.oneDayVolumeUSD && tokenB?.oneDayVolumeUSD) {
-            return tokenA?.totalLiquidity > tokenB?.totalLiquidity ? -1 : 1
-          }
-          return 1
+          const poolA = allPoolData[a.id]
+          const poolB = allPoolData[b.id]
+
+          return (poolA && poolB) ? (poolA.totalValueLockedUSD > poolB.totalValueLockedUSD ? -1 : 1) : -1
         })
-        .filter((token) => {
-          if (TOKEN_BLACKLIST.includes(token.id)) {
-            return false
-          }
-          const regexMatches = Object.keys(token).map((tokenEntryKey) => {
+        .filter((pool) => {
+          const regexMatches = Object.keys(pool).map((poolEntryKey) => {
             const isAddress = value.slice(0, 2) === '0x'
-            if (tokenEntryKey === 'id' && isAddress) {
-              return token[tokenEntryKey].match(new RegExp(escapeRegExp(value), 'i'))
+            if (poolEntryKey === 'id' && isAddress) {
+              return pool[poolEntryKey].match(new RegExp(escapeRegExp(value), 'i'))
             }
-            if (tokenEntryKey === 'symbol' && !isAddress) {
-              return token[tokenEntryKey].match(new RegExp(escapeRegExp(value), 'i'))
-            }
-            if (tokenEntryKey === 'name' && !isAddress) {
-              return token[tokenEntryKey].match(new RegExp(escapeRegExp(value), 'i'))
+            if (poolEntryKey === 'name' && !isAddress) {
+              return pool[poolEntryKey].match(new RegExp(escapeRegExp(value), 'i'))
             }
             return false
           })
           return regexMatches.some((m) => m)
         })
       : []
-  }, [allTokenData, uniqueTokens, value])
+  }, [allPoolData, uniquePools, value])
 
-  const filteredPairList = useMemo(() => {
-    return uniquePairs
-      ? uniquePairs
+  const filteredNFTPoolList = useMemo(() => {
+    return uniqueNFTPools
+      ? uniqueNFTPools
         .sort((a, b) => {
-          const pairA = allPairData[a.id]
-          const pairB = allPairData[b.id]
-          if (pairA?.trackedReserveETH && pairB?.trackedReserveETH) {
-            return parseFloat(pairA.trackedReserveETH) > parseFloat(pairB.trackedReserveETH) ? -1 : 1
-          }
-          if (pairA?.trackedReserveETH && !pairB?.trackedReserveETH) {
-            return -1
-          }
-          if (!pairA?.trackedReserveETH && pairB?.trackedReserveETH) {
-            return 1
-          }
-          return 0
+          const NFTPoolA = allNFTPoolData[a.id]
+          const NFTPoolB = allNFTPoolData[b.id]
+
+          return (NFTPoolA && NFTPoolB) ? (NFTPoolA.totalValueLockedUSD > NFTPoolB.totalValueLockedUSD ? -1 : 1) : -1
         })
-        .filter((pair) => {
-          if (PAIR_BLACKLIST.includes(pair.id)) {
-            return false
-          }
-          if (value && value.includes(' ')) {
-            const pairA = value.split(' ')[0]?.toUpperCase()
-            const pairB = value.split(' ')[1]?.toUpperCase()
-            return (
-              (pair.token0.symbol.includes(pairA) || pair.token0.symbol.includes(pairB)) &&
-              (pair.token1.symbol.includes(pairA) || pair.token1.symbol.includes(pairB))
-            )
-          }
-          if (value && value.includes('-')) {
-            const pairA = value.split('-')[0]?.toUpperCase()
-            const pairB = value.split('-')[1]?.toUpperCase()
-            return (
-              (pair.token0.symbol.includes(pairA) || pair.token0.symbol.includes(pairB)) &&
-              (pair.token1.symbol.includes(pairA) || pair.token1.symbol.includes(pairB))
-            )
-          }
-          const regexMatches = Object.keys(pair).map((field) => {
+        .filter((NFTPool) => {
+          const regexMatches = Object.keys(NFTPool).map((NFTPoolEntryKey) => {
             const isAddress = value.slice(0, 2) === '0x'
-            if (field === 'id' && isAddress) {
-              return pair[field].match(new RegExp(escapeRegExp(value), 'i'))
+            if (NFTPoolEntryKey === 'id' && isAddress) {
+              return NFTPool[NFTPoolEntryKey].match(new RegExp(escapeRegExp(value), 'i'))
             }
-            if (field === 'token0') {
-              return (
-                pair[field].symbol.match(new RegExp(escapeRegExp(value), 'i')) ||
-                pair[field].name.match(new RegExp(escapeRegExp(value), 'i'))
-              )
-            }
-            if (field === 'token1') {
-              return (
-                pair[field].symbol.match(new RegExp(escapeRegExp(value), 'i')) ||
-                pair[field].name.match(new RegExp(escapeRegExp(value), 'i'))
-              )
+            if (NFTPoolEntryKey === 'name' && !isAddress) {
+              return NFTPool[NFTPoolEntryKey].match(new RegExp(escapeRegExp(value), 'i'))
             }
             return false
           })
           return regexMatches.some((m) => m)
         })
       : []
-  }, [allPairData, uniquePairs, value])
+  }, [allNFTPoolData, uniqueNFTPools, value])
 
   useEffect(() => {
-    if (Object.keys(filteredTokenList).length > 2) {
+    if (Object.keys(filteredPoolList).length > 2) {
       toggleShadow(true)
     } else {
       toggleShadow(false)
     }
-  }, [filteredTokenList])
+  }, [filteredPoolList])
 
   useEffect(() => {
-    if (Object.keys(filteredPairList).length > 2) {
+    if (Object.keys(filteredNFTPoolList).length > 2) {
       toggleBottomShadow(true)
     } else {
       toggleBottomShadow(false)
     }
-  }, [filteredPairList])
+  }, [filteredNFTPoolList])
 
-  const [tokensShown, setTokensShown] = useState(3)
-  const [pairsShown, setPairsShown] = useState(3)
+  const [poolsShown, setPoolsShown] = useState(3)
+  const [NFTPoolsShown, setNFTPoolsShown] = useState(3)
 
   function onDismiss() {
-    setPairsShown(3)
-    setTokensShown(3)
+    setPoolsShown(3)
+    setNFTPoolsShown(3)
     toggleMenu(false)
     setValue('')
   }
@@ -402,8 +355,8 @@ export const Search = ({ small = false }) => {
       !(menuRef.current && menuRef.current.contains(e.target)) &&
       !(wrapperRef.current && wrapperRef.current.contains(e.target))
     ) {
-      setPairsShown(3)
-      setTokensShown(3)
+      setPoolsShown(3)
+      setNFTPoolsShown(3)
       toggleMenu(false)
     }
   }
@@ -447,35 +400,32 @@ export const Search = ({ small = false }) => {
       </Wrapper>
       <Menu hide={!showMenu} ref={menuRef}>
         <Heading>
-          <Gray>Pairs</Gray>
+          <Gray>Pools</Gray>
         </Heading>
         <div>
-          {filteredPairList && Object.keys(filteredPairList).length === 0 && (
+          {filteredPoolList && Object.keys(filteredPoolList).length === 0 && (
             <MenuItem>
               <TYPE.body>No results</TYPE.body>
             </MenuItem>
           )}
-          {filteredPairList &&
-            filteredPairList.slice(0, pairsShown).map((pair) => {
-              //format incorrect names
-              updateNameData(pair)
+          {filteredPoolList &&
+            filteredPoolList.slice(0, poolsShown).map((pool) => {
               return (
-                <BasicLink to={'/pair/' + pair.id} key={pair.id} onClick={onDismiss}>
+                <BasicLink to={'/pair/' + pool.id} key={pool.id} onClick={onDismiss}>
                   <MenuItem>
-                    <DoubleTokenLogo a0={pair?.token0?.id} a1={pair?.token1?.id} margin={true} />
-                    <TYPE.body style={{ marginLeft: '10px' }}>
-                      {pair.token0.symbol + '-' + pair.token1.symbol} Pair
-                    </TYPE.body>
+                    <RowFixed>
+                      <FormattedName text={pool.name} maxCharacters={20} style={{ marginRight: '6px' }} />
+                    </RowFixed>
                   </MenuItem>
                 </BasicLink>
               )
             })}
           <Heading
-            hide={!(Object.keys(filteredPairList).length > 3 && Object.keys(filteredPairList).length >= pairsShown)}
+            hide={!(Object.keys(filteredPoolList).length > 3 && Object.keys(filteredPoolList).length >= poolsShown)}
           >
             <Blue
               onClick={() => {
-                setPairsShown(pairsShown + 5)
+                setPoolsShown(poolsShown + 5)
               }}
             >
               See more...
@@ -483,24 +433,20 @@ export const Search = ({ small = false }) => {
           </Heading>
         </div>
         <Heading>
-          <Gray>Tokens</Gray>
+          <Gray>NFT Pools</Gray>
         </Heading>
         <div>
-          {Object.keys(filteredTokenList).length === 0 && (
+          {Object.keys(filteredNFTPoolList).length === 0 && (
             <MenuItem>
               <TYPE.body>No results</TYPE.body>
             </MenuItem>
           )}
-          {filteredTokenList.slice(0, tokensShown).map((token) => {
-            // update displayed names
-            updateNameData({ token0: token })
+          {filteredNFTPoolList.slice(0, NFTPoolsShown).map((NFTPool) => {
             return (
-              <BasicLink to={'/token/' + token.id} key={token.id} onClick={onDismiss}>
+              <BasicLink to={'/token/' + NFTPool.id} key={NFTPool.id} onClick={onDismiss}>
                 <MenuItem>
                   <RowFixed>
-                    <TokenLogo address={token.id} style={{ marginRight: '10px' }} />
-                    <FormattedName text={token.name} maxCharacters={20} style={{ marginRight: '6px' }} />
-                    (<FormattedName text={token.symbol} maxCharacters={6} />)
+                    <FormattedName text={NFTPool.name} maxCharacters={20} style={{ marginRight: '6px' }} />
                   </RowFixed>
                 </MenuItem>
               </BasicLink>
@@ -508,11 +454,11 @@ export const Search = ({ small = false }) => {
           })}
 
           <Heading
-            hide={!(Object.keys(filteredTokenList).length > 3 && Object.keys(filteredTokenList).length >= tokensShown)}
+            hide={!(Object.keys(filteredNFTPoolList).length > 3 && Object.keys(filteredNFTPoolList).length >= NFTPoolsShown)}
           >
             <Blue
               onClick={() => {
-                setTokensShown(tokensShown + 5)
+                setNFTPoolsShown(NFTPoolsShown + 5)
               }}
             >
               See more...
