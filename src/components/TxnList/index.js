@@ -5,7 +5,6 @@ import { useMedia } from 'react-use'
 import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
 
-import { useCurrentCurrency } from '../../contexts/Application'
 import { TYPE } from '../../Theme'
 import { formattedNum, formatTime, urls } from '../../utils'
 import { Divider, EmptyCard } from '..'

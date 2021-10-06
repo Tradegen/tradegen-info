@@ -47,9 +47,7 @@ function GlobalPage() {
   // get data for lists and totals
   const allPools = useAllPoolData()
   const allNFTPools = useAllNFTPoolData()
-  const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
-  const [darkMode] = useDarkModeManager()
   const transactionsTradegen = useGlobalTransactionsTradegen()
 
   console.log(allPools)
@@ -70,8 +68,8 @@ function GlobalPage() {
   return (
     <PageWrapper>
       <ThemedBackground
-        backgroundColor={transparentize(0.6, '#8878c3')}
-        endColor={transparentize(1, darkMode ? '#212429' : '#FFFFFF')}
+        backgroundColor={transparentize(0.6, '#5271FF')}
+        endColor={transparentize(1, '#212429')}
       />
       <ContentWrapper>
         <div>
