@@ -8,11 +8,11 @@ import styled from 'styled-components'
 import { FullWrapper, PageWrapper } from '../components'
 import AccountSearch from '../components/AccountSearch'
 import LocalLoader from '../components/LocalLoader'
-import LPList from '../components/LPList'
+import TopPositionList from '../components/TopPositionList'
 import Panel from '../components/Panel'
 import { RowBetween } from '../components/Row'
 import Search from '../components/Search'
-import { useTopLps, useTopPositions } from '../contexts/GlobalData'
+import { useTopPositions } from '../contexts/GlobalData'
 import { TYPE } from '../Theme'
 
 const AccountWrapper = styled.div`
@@ -27,7 +27,6 @@ function AccountLookup() {
     window.scrollTo(0, 0)
   }, [])
 
-  const topLps = useTopLps()
   const topPositions = useTopPositions()
 
   console.log(topPositions)
@@ -45,9 +44,9 @@ function AccountLookup() {
           <AccountSearch />
         </AccountWrapper>
         <TYPE.main fontSize={'1.125rem'} style={{ marginTop: '2rem' }}>
-          Top Liquidity Positions
+          Top Positions
         </TYPE.main>
-        <Panel>{topLps && topLps.length > 0 ? <LPList lps={topLps} maxItems={200} /> : <LocalLoader />}</Panel>
+        <Panel>{topPositions && topPositions.length > 0 ? <TopPositionList positions={topPositions} maxItems={200} /> : <LocalLoader />}</Panel>
       </FullWrapper>
     </PageWrapper>
   )
