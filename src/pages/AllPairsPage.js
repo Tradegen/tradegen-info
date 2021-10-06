@@ -1,46 +1,38 @@
 import 'feather-icons'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useMedia } from 'react-use'
 
 import { FullWrapper, PageWrapper } from '../components'
-import CheckBox from '../components/Checkbox'
-import PairList from '../components/PairList'
 import Panel from '../components/Panel'
-import QuestionHelper from '../components/QuestionHelper'
-import { AutoRow, RowBetween } from '../components/Row'
+import { RowBetween } from '../components/Row'
 import Search from '../components/Search'
-import { useAllPairData } from '../contexts/PairData'
 import { TYPE } from '../Theme'
+import { useAllNFTPoolData } from '../contexts/NFTPoolData'
+import TopNFTPoolList from '../components/NFTPoolList'
 
-function AllPairsPage() {
-  const allPairs = useAllPairData()
+function AllNFTPoolsPage() {
+  const allNFTPools = useAllNFTPoolData()
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [])
 
-  const below800 = useMedia('(max-width: 800px)')
-
-  const [useTracked, setUseTracked] = useState(true)
+  const below600 = useMedia('(max-width: 800px)')
 
   return (
     <PageWrapper>
       <FullWrapper>
         <RowBetween>
-          <TYPE.largeHeader>Top Pairs</TYPE.largeHeader>
-          {!below800 && <Search small={true} />}
+          <TYPE.largeHeader>Top NFT Pools</TYPE.largeHeader>
+          {!below600 && <Search small={true} />}
         </RowBetween>
-        <AutoRow gap="4px">
-          <CheckBox checked={useTracked} setChecked={() => setUseTracked(!useTracked)} text={'Hide unstable pairs'} />
-          <QuestionHelper text="USD amounts may be inaccurate in low liquidity pairs or pairs without stablecoins." />
-        </AutoRow>
-        <Panel style={{ padding: below800 && '1rem 0 0 0 ' }}>
-          <PairList pairs={allPairs} disbaleLinks={true} maxItems={50} useTracked={useTracked} />
+        <Panel style={{ marginTop: '6px', padding: below600 && '1rem 0 0 0 ' }}>
+          <TopNFTPoolList NFTPools={allNFTPools} itemMax={50} />
         </Panel>
       </FullWrapper>
     </PageWrapper>
   )
 }
 
-export default AllPairsPage
+export default AllNFTPoolsPage
