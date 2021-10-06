@@ -1151,3 +1151,35 @@ export const GLOBAL_TXNS_TRADEGEN = gql`
     }
   }
 `
+
+export const TOP_POSITIONS_PER_POOL = gql`
+  query TopPositionsPerPool($poolAddress: String!) {
+    poolPositions(where: { pool: $poolAddress }, orderBy: tokenBalance, orderDirection: desc, first: 10) {
+      user {
+        id
+      }
+      pool {
+        id
+        name
+        tokenPrice
+      }
+      tokenBalance
+    }
+  }
+`
+
+export const TOP_POSITIONS_PER_NFT_POOL = gql`
+  query TopPositionsPerNFTPool($NFTPoolAddress: String!) {
+    nftpoolPositions(where: { NFTPool: $NFTPoolAddress }, orderBy: tokenBalance, orderDirection: desc, first: 10) {
+      user {
+        id
+      }
+      NFTPool {
+        id
+        name
+        tokenPrice
+      }
+      tokenBalance
+    }
+  }
+`

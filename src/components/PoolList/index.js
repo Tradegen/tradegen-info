@@ -199,11 +199,11 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
                         </CustomLink>
                     </Row>
                 </DataText>
-                <DataText area="tvl">{formattedNum(parseFloat((BigInt(item.totalValueLockedUSD.toString()) / BigInt("1000000000000000000")).toString()), true)}</DataText>
+                <DataText area="tvl">{formattedNum(parseFloat((BigInt(item.totalValueLockedUSD.toString()) / BigInt("10000000000000000")).toString()) / 100, true)}</DataText>
                 <DataText area="fee">{item.performanceFee / 100}%</DataText>
                 {!below1080 && (
                     <DataText area="price" color="text" fontWeight="500">
-                        {formattedNum(parseFloat((BigInt(item.tokenPrice.toString()) / BigInt("1000000000000000000")).toString()), true)}
+                        {formattedNum(parseFloat((BigInt(item.tokenPrice.toString()) / BigInt("1000000000000000")).toString()) / 1000, true)}
                     </DataText>
                 )}
                 {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}

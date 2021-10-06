@@ -34,7 +34,9 @@ import {
   TOP_LPS_PER_PAIRS,
   GLOBAL_DATA_TRADEGEN,
   GLOBAL_DATA_TRADEGEN_LATEST,
-  GLOBAL_CHART_TRADEGEN
+  GLOBAL_CHART_TRADEGEN,
+  TOP_POSITIONS_PER_NFT_POOL,
+  TOP_POSITIONS_PER_POOL
 } from '../apollo/queries'
 import { FACTORY_ADDRESS, ADDRESS_RESOLVER_ADDRESS } from '../constants'
 import {
@@ -47,6 +49,8 @@ import {
 import { toBigDecimal } from '../utils/typeAssertions'
 import { useTimeframe } from './Application'
 import { useAllPairData } from './PairData'
+import { useAllPoolData } from './PoolData'
+import { useAllNFTPoolData } from './NFTPoolData'
 import { useTokenChartDataCombined } from './TokenData'
 
 const UPDATE = 'UPDATE'
@@ -59,6 +63,7 @@ const UPDATE_ALL_PAIRS_IN_UBESWAP = 'UPDATE_TOP_PAIRS'
 const UPDATE_ALL_TOKENS_IN_UBESWAP = 'UPDATE_ALL_TOKENS_IN_UBESWAP'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
 const UPDATE_TRADEGEN = 'UPDATE_TRADEGEN'
+const UPDATE_TOP_POSITIONS = 'UPDATE_TOP_POSITIONS'
 
 const offsetVolumes = [
   // '0x9ea3b5b4ec044b70375236a281986106457b20ef',
@@ -84,6 +89,7 @@ interface IGlobalDataState {
   allPairs: unknown
   allTokens: unknown
   topLps: unknown
+  topPositions: unknown
 }
 
 interface IGlobalDataActions {
@@ -96,6 +102,7 @@ interface IGlobalDataActions {
   updateCeloPrice: (newPrice: unknown, oneDayPrice: unknown, priceChange: unknown) => void
   updateTradegen: (data: IGlobalDataTradegen) => void
   updateTransactionsTradegen: (txns: unknown) => void
+  updateTopPositions: (positions: unknown) => void
 }
 
 const GlobalDataContext = createContext<[IGlobalDataState, IGlobalDataActions]>(null)
@@ -176,6 +183,14 @@ function reducer(state, { type, payload }) {
       return {
         ...state,
         globalDataTradegen: data,
+      }
+    }
+
+    case UPDATE_TOP_POSITIONS: {
+      const { topPositions } = payload
+      return {
+        ...state,
+        topPositions,
       }
     }
 
@@ -271,6 +286,16 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  const updateTopPositions = useCallback((topPositions) => {
+    dispatch({
+      type: UPDATE_TOP_POSITIONS,
+      payload: {
+        topPositions,
+      },
+    })
+  }, [])
+
+
   return (
     <GlobalDataContext.Provider
       value={useMemo(
@@ -285,7 +310,8 @@ export default function Provider({ children }: { children: React.ReactNode }) {
             updateAllPairsInUbeswap,
             updateAllTokensInUbeswap,
             updateTradegen,
-            updateTransactionsTradegen
+            updateTransactionsTradegen,
+            updateTopPositions
           },
         ],
         [
@@ -298,7 +324,8 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           updateAllPairsInUbeswap,
           updateAllTokensInUbeswap,
           updateTradegen,
-          updateTransactionsTradegen
+          updateTransactionsTradegen,
+          updateTopPositions
         ]
       )}
     >
@@ -1068,4 +1095,111 @@ export function useGlobalTransactionsTradegen() {
     fetchData()
   }, [updateTransactionsTradegen, transactionsTradegen])
   return transactionsTradegen
+}
+
+/**
+ * Get the top pool and NFT pool positions based on USD size
+ * @TODO Not a perfect lookup needs improvement
+ */
+export function useTopPositions() {
+  const [state, { updateTopPositions }] = useGlobalDataContext()
+  const topPositions = state?.topPositions
+
+  const allPools = useAllPoolData()
+  const allNFTPools = useAllNFTPoolData()
+
+  useEffect(() => {
+    async function fetchData() {
+      // get top 100 pools by total value locked
+      const topPools = Object.keys(allPools)
+        ?.sort((a, b) => parseFloat((allPools[a].totalValueLockedUSD > allPools[b].totalValueLockedUSD ? -1 : 1).toString()))
+        ?.slice(0, 99)
+        .map((pool) => pool)
+
+      // get top 100 NFT pools by total value locked
+      const topNFTPools = Object.keys(allNFTPools)
+        ?.sort((a, b) => parseFloat((allNFTPools[a].totalValueLockedUSD > allNFTPools[b].totalValueLockedUSD ? -1 : 1).toString()))
+        ?.slice(0, 99)
+        .map((NFTPool) => NFTPool)
+
+      const topPoolPositionLists = await Promise.all(
+        topPools.map(async (pool) => {
+          // for each one, fetch top pool positions
+          try {
+            const { data: results } = await tradegenClient.query({
+              query: TOP_POSITIONS_PER_POOL,
+              variables: {
+                poolAddress: pool.toString(),
+              },
+              fetchPolicy: 'cache-first',
+            })
+            if (results) {
+              return results.poolPositions
+            }
+          } catch (e) { }
+        })
+      )
+
+      const topNFTPoolPositionLists = await Promise.all(
+        topNFTPools.map(async (NFTPool) => {
+          // for each one, fetch top NFT pool positions
+          try {
+            const { data: results } = await tradegenClient.query({
+              query: TOP_POSITIONS_PER_NFT_POOL,
+              variables: {
+                NFTPoolAddress: NFTPool.toString(),
+              },
+              fetchPolicy: 'cache-first',
+            })
+            if (results) {
+              return results.nftpoolPositions
+            }
+          } catch (e) { }
+        })
+      )
+
+      // get the top positions from the results formatted
+      const topPositions = []
+      topPoolPositionLists
+        .filter((i) => !!i) // check for ones not fetched correctly
+        .map((list) => {
+          return list.map((entry) => {
+            const poolData = allPools[entry.pool.id]
+            return topPositions.push({
+              user: entry.user,
+              type: "Pool",
+              name: entry.pool.name,
+              address: entry.pool.id,
+              usd:
+                parseFloat((BigInt(entry.pool.tokenPrice) / BigInt("10000000000000000")).toString()) * parseFloat(entry.tokenBalance.toString()) / 100
+            })
+          })
+        })
+
+      topNFTPoolPositionLists
+        .filter((i) => !!i) // check for ones not fetched correctly
+        .map((list) => {
+          return list.map((entry) => {
+            return topPositions.push({
+              user: entry.user,
+              type: "NFT pool",
+              name: entry.NFTPool.name,
+              address: entry.NFTPool.id,
+              usd:
+                parseFloat((BigInt(entry.pool.tokenPrice) / BigInt("10000000000000000")).toString()) * parseFloat(entry.tokenBalance.toString()) / 100
+            })
+          })
+        })
+
+      const sorted = topPositions.sort((a, b) => (a.usd > b.usd ? -1 : 1))
+      const shorter = sorted.splice(0, 100)
+      updateTopPositions(shorter)
+    }
+
+    if (!topPositions && allPools && Object.keys(allPools).length > 0) {
+      fetchData()
+    }
+  })
+
+  return topPositions
 }

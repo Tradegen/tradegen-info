@@ -12,7 +12,7 @@ import LPList from '../components/LPList'
 import Panel from '../components/Panel'
 import { RowBetween } from '../components/Row'
 import Search from '../components/Search'
-import { useTopLps } from '../contexts/GlobalData'
+import { useTopLps, useTopPositions } from '../contexts/GlobalData'
 import { TYPE } from '../Theme'
 
 const AccountWrapper = styled.div`
@@ -28,6 +28,9 @@ function AccountLookup() {
   }, [])
 
   const topLps = useTopLps()
+  const topPositions = useTopPositions()
+
+  console.log(topPositions)
 
   const below600 = useMedia('(max-width: 600px)')
 
