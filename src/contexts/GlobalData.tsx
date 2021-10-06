@@ -7,6 +7,10 @@ import { client, tradegenClient } from '../apollo/client'
 import {
   AllPairsQuery,
   AllPairsQueryVariables,
+  AllPoolsQuery,
+  AllPoolsQueryVariables,
+  AllNftPoolsQuery,
+  AllNftPoolsQueryVariables,
   CeloPriceQuery,
   CeloPriceQueryVariables,
   CurrentCeloPriceQuery,
@@ -24,6 +28,8 @@ import {
 import {
   ALL_PAIRS,
   ALL_TOKENS,
+  ALL_POOLS,
+  ALL_NFT_POOLS,
   CELO_PRICE,
   CURRENT_CELO_PRICE,
   GLOBAL_CHART,
@@ -64,6 +70,8 @@ const UPDATE_ALL_TOKENS_IN_UBESWAP = 'UPDATE_ALL_TOKENS_IN_UBESWAP'
 const UPDATE_TOP_LPS = 'UPDATE_TOP_LPS'
 const UPDATE_TRADEGEN = 'UPDATE_TRADEGEN'
 const UPDATE_TOP_POSITIONS = 'UPDATE_TOP_POSITIONS'
+const UPDATE_ALL_POOLS_IN_TRADEGEN = 'UPDATE_ALL_POOLS_IN_TRADEGEN'
+const UPDATE_ALL_NFT_POOLS_IN_TRADEGEN = 'UPDATE_ALL_NFT_POOLS_IN_TRADEGEN'
 
 const offsetVolumes = [
   // '0x9ea3b5b4ec044b70375236a281986106457b20ef',
@@ -90,6 +98,8 @@ interface IGlobalDataState {
   allTokens: unknown
   topLps: unknown
   topPositions: unknown
+  allPools: unknown
+  allNFTPools: unknown
 }
 
 interface IGlobalDataActions {
@@ -103,6 +113,8 @@ interface IGlobalDataActions {
   updateTradegen: (data: IGlobalDataTradegen) => void
   updateTransactionsTradegen: (txns: unknown) => void
   updateTopPositions: (positions: unknown) => void
+  updateAllPoolsInTradegen: (tokens: unknown[]) => void
+  updateAllNFTPoolsInTradegen: (tokens: unknown[]) => void
 }
 
 const GlobalDataContext = createContext<[IGlobalDataState, IGlobalDataActions]>(null)
@@ -191,6 +203,22 @@ function reducer(state, { type, payload }) {
       return {
         ...state,
         topPositions,
+      }
+    }
+
+    case UPDATE_ALL_POOLS_IN_TRADEGEN: {
+      const { allPools } = payload
+      return {
+        ...state,
+        allPools,
+      }
+    }
+
+    case UPDATE_ALL_NFT_POOLS_IN_TRADEGEN: {
+      const { allNFTPools } = payload
+      return {
+        ...state,
+        allNFTPools,
       }
     }
 
@@ -295,6 +323,23 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  const updateAllPoolsInTradegen = useCallback((allPools) => {
+    dispatch({
+      type: UPDATE_ALL_POOLS_IN_TRADEGEN,
+      payload: {
+        allPools,
+      },
+    })
+  }, [])
+
+  const updateAllNFTPoolsInTradegen = useCallback((allNFTPools) => {
+    dispatch({
+      type: UPDATE_ALL_NFT_POOLS_IN_TRADEGEN,
+      payload: {
+        allNFTPools,
+      },
+    })
+  }, [])
 
   return (
     <GlobalDataContext.Provider
@@ -311,7 +356,9 @@ export default function Provider({ children }: { children: React.ReactNode }) {
             updateAllTokensInUbeswap,
             updateTradegen,
             updateTransactionsTradegen,
-            updateTopPositions
+            updateTopPositions,
+            updateAllPoolsInTradegen,
+            updateAllNFTPoolsInTradegen
           },
         ],
         [
@@ -325,7 +372,9 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           updateAllTokensInUbeswap,
           updateTradegen,
           updateTransactionsTradegen,
-          updateTopPositions
+          updateTopPositions,
+          updateAllPoolsInTradegen,
+          updateAllNFTPoolsInTradegen
         ]
       )}
     >
@@ -673,66 +722,10 @@ const PAIRS_TO_FETCH = 500
 const TOKENS_TO_FETCH = 500
 
 /**
- * Loop through every pair on ubeswap, used for search
- */
-async function getAllPairsOnUbeswap(): Promise<AllPairsQuery['pairs']> {
-  try {
-    let allFound = false
-    let pairs: AllPairsQuery['pairs'][number][] = []
-    let skipCount = 0
-    while (!allFound) {
-      const result = await client.query<AllPairsQuery, AllPairsQueryVariables>({
-        query: ALL_PAIRS,
-        variables: {
-          skip: skipCount,
-        },
-        fetchPolicy: 'cache-first',
-      })
-      skipCount = skipCount + PAIRS_TO_FETCH
-      pairs = pairs.concat(result?.data?.pairs)
-      if (result?.data?.pairs.length < PAIRS_TO_FETCH || pairs.length > PAIRS_TO_FETCH) {
-        allFound = true
-      }
-    }
-    return pairs
-  } catch (e) {
-    console.log(e)
-  }
-}
-
-/**
- * Loop through every token on ubeswap, used for search
- */
-async function getAllTokensOnUbeswap() {
-  try {
-    let allFound = false
-    let skipCount = 0
-    let tokens = []
-    while (!allFound) {
-      const result = await client.query({
-        query: ALL_TOKENS,
-        variables: {
-          skip: skipCount,
-        },
-        fetchPolicy: 'cache-first',
-      })
-      tokens = tokens.concat(result?.data?.tokens)
-      if (result?.data?.tokens?.length < TOKENS_TO_FETCH || tokens.length > TOKENS_TO_FETCH) {
-        allFound = true
-      }
-      skipCount = skipCount += TOKENS_TO_FETCH
-    }
-    return tokens
-  } catch (e) {
-    console.log(e)
-  }
-}
-
-/**
- * Hook that fetches overview data, plus all tokens and pairs for search
+ * Hook that fetches overview data, plus all pools and NFT pools for search
  */
 export function useGlobalData(): Partial<IGlobalDataTradegen> {
-  const [state, { updateTradegen, updateAllPairsInUbeswap, updateAllTokensInUbeswap }] = useGlobalDataContext()
+  const [state, { updateTradegen, updateAllPoolsInTradegen, updateAllNFTPoolsInTradegen }] = useGlobalDataContext()
 
   const data: IGlobalDataTradegen | undefined = state?.globalDataTradegen
 
@@ -745,12 +738,12 @@ export function useGlobalData(): Partial<IGlobalDataTradegen> {
       updateTradegen(globalDataTradegen)
     }
 
-    const allPairs = await getAllPairsOnUbeswap()
-    updateAllPairsInUbeswap(allPairs)
+    const allPools = await getAllPoolsOnTradegen()
+    updateAllPoolsInTradegen(allPools)
 
-    const allTokens = await getAllTokensOnUbeswap()
-    updateAllTokensInUbeswap(allTokens)
-  }, [updateTradegen, updateAllPairsInUbeswap, updateAllTokensInUbeswap])
+    const allNFTPools = await getAllNFTPoolsOnTradegen()
+    updateAllNFTPoolsInTradegen(allNFTPools)
+  }, [updateTradegen, updateAllPoolsInTradegen, updateAllNFTPoolsInTradegen])
 
   useEffect(() => {
     if (!data) {
@@ -1202,4 +1195,74 @@ export function useTopPositions() {
   })
 
   return topPositions
+}
+
+export function useAllPoolsInTradegen() {
+  const [state] = useGlobalDataContext()
+  const allPools = state?.allPools
+
+  return allPools || []
+}
+
+export function useAllNFTPoolsInTradegen() {
+  const [state] = useGlobalDataContext()
+  const allNFTPools = state?.allNFTPools
+
+  return allNFTPools || []
+}
+
+/**
+ * Loop through every pool on Tradegen, used for search
+ */
+async function getAllPoolsOnTradegen() {
+  try {
+    let allFound = false
+    let skipCount = 0
+    let pools = []
+    while (!allFound) {
+      const result = await tradegenClient.query({
+        query: ALL_POOLS,
+        variables: {
+          skip: skipCount,
+        },
+        fetchPolicy: 'cache-first',
+      })
+      pools = pools.concat(result?.data?.pools)
+      if (result?.data?.pools?.length < TOKENS_TO_FETCH || pools.length > TOKENS_TO_FETCH) {
+        allFound = true
+      }
+      skipCount = skipCount += TOKENS_TO_FETCH
+    }
+    return pools
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+/**
+ * Loop through every NFT pool on Tradegen, used for search
+ */
+async function getAllNFTPoolsOnTradegen() {
+  try {
+    let allFound = false
+    let skipCount = 0
+    let NFTPools = []
+    while (!allFound) {
+      const result = await tradegenClient.query({
+        query: ALL_NFT_POOLS,
+        variables: {
+          skip: skipCount,
+        },
+        fetchPolicy: 'cache-first',
+      })
+      NFTPools = NFTPools.concat(result?.data?.pools)
+      if (result?.data?.nftpools?.length < TOKENS_TO_FETCH || NFTPools.length > TOKENS_TO_FETCH) {
+        allFound = true
+      }
+      skipCount = skipCount += TOKENS_TO_FETCH
+    }
+    return NFTPools
+  } catch (e) {
+    console.log(e)
+  }
 }

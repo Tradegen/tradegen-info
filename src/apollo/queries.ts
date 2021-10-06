@@ -1183,3 +1183,53 @@ export const TOP_POSITIONS_PER_NFT_POOL = gql`
     }
   }
 `
+
+export const POOL_SEARCH = gql`
+  query PoolSearch($value: String, $id: ID) {
+    asName: pools(where: { name_contains: $value }, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      id
+      name
+      totalValueLockedUSD
+    }
+    asAddress: pools(where: { id: $id }, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      id
+      name
+      totalValueLockedUSD
+    }
+  }
+`
+
+export const NFT_POOL_SEARCH = gql`
+  query NFTPoolSearch($value: String, $id: ID) {
+    asName: nftpools(where: { name_contains: $value }, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      id
+      name
+      totalValueLockedUSD
+    }
+    asAddress: nftpools(where: { id: $id }, orderBy: totalValueLockedUSD, orderDirection: desc) {
+      id
+      name
+      totalValueLockedUSD
+    }
+  }
+`
+
+export const ALL_POOLS = gql`
+  query AllPools($skip: Int!) {
+    pools(first: 500, skip: $skip) {
+      id
+      name
+      totalValueLockedUSD
+    }
+  }
+`
+
+export const ALL_NFT_POOLS = gql`
+  query AllNFTPools($skip: Int!) {
+    nftpools(first: 500, skip: $skip) {
+      id
+      name
+      totalValueLockedUSD
+    }
+  }
+`
