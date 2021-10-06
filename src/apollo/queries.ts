@@ -1082,3 +1082,55 @@ export const NFT_POOL_DATA = gql`
   }
   ${NFTPoolFields}
 `
+
+export const GLOBAL_TXNS_TRADEGEN = gql`
+  query GlobalTransactionsTradegen {
+    poolTransactions(first: 100, orderBy: timestamp, orderDirection: desc) {
+      deposit {
+        poolTransaction {
+          id
+          timestamp
+        }
+        userAddress
+        amount
+      }
+      withdraw {
+        poolTransaction {
+          id
+          timestamp
+        }
+        userAddress
+        tokenAmount
+        USDAmount
+      }
+      mintFee {
+        poolTransaction {
+          id
+          timestamp
+        }
+        managerAddress
+        feesMinted
+      }
+    }
+    nftpoolTransactions(first: 100, orderBy: timestamp, orderDirection: desc) {
+      deposit {
+        NFTPoolTransaction {
+          id
+          timestamp
+        }
+        userAddress
+        tokenAmount
+        USDAmount
+      }
+      withdraw {
+        NFTPoolTransaction {
+          id
+          timestamp
+        }
+        userAddress
+        tokenAmount
+        USDAmount
+      }
+    }
+  }
+`

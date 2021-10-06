@@ -16,7 +16,7 @@ import Search from '../components/Search'
 import TopPoolList from '../components/PoolList'
 import TopNFTPoolList from '../components/NFTPoolList'
 import TxnList from '../components/TxnList'
-import { useGlobalData, useGlobalTransactions } from '../contexts/GlobalData'
+import { useGlobalData, useGlobalTransactions, useGlobalTransactionsTradegen } from '../contexts/GlobalData'
 import { useDarkModeManager } from '../contexts/LocalStorage'
 import { useAllPoolData } from '../contexts/PoolData'
 import { useAllNFTPoolData } from '../contexts/NFTPoolData'
@@ -50,9 +50,11 @@ function GlobalPage() {
   const transactions = useGlobalTransactions()
   const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
   const [darkMode] = useDarkModeManager()
+  const transactionsTradegen = useGlobalTransactionsTradegen()
 
   console.log(allPools)
   console.log(allNFTPools)
+  console.log(transactionsTradegen)
 
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')

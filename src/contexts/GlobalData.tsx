@@ -15,6 +15,7 @@ import {
   GlobalDataQuery,
   GlobalDataQueryVariables,
   GlobalTransactionsQuery,
+  GlobalTransactionsTradegenQuery,
   GlobalDataTradegenLatestQuery,
   GlobalDataTradegenLatestQueryVariables,
   GlobalDataTradegenQuery,
@@ -29,6 +30,7 @@ import {
   GLOBAL_DATA,
   GLOBAL_DATA_LATEST,
   GLOBAL_TXNS,
+  GLOBAL_TXNS_TRADEGEN,
   TOP_LPS_PER_PAIRS,
   GLOBAL_DATA_TRADEGEN,
   GLOBAL_DATA_TRADEGEN_LATEST,
@@ -49,6 +51,7 @@ import { useTokenChartDataCombined } from './TokenData'
 
 const UPDATE = 'UPDATE'
 const UPDATE_TXNS = 'UPDATE_TXNS'
+const UPDATE_TXNS_TRADEGEN = 'UPDATE_TXNS_TRADEGEN'
 const UPDATE_CHART = 'UPDATE_CHART'
 const UPDATE_CELO_PRICE = 'UPDATE_CELO_PRICE'
 const CELO_PRICE_KEY = 'CELO_PRICE_KEY'
@@ -77,6 +80,7 @@ interface IGlobalDataState {
     weekly: unknown
   }
   transactions?: unknown
+  transactionsTradegen?: unknown
   allPairs: unknown
   allTokens: unknown
   topLps: unknown
@@ -91,6 +95,7 @@ interface IGlobalDataActions {
   updateTopLps: (lps: unknown) => void
   updateCeloPrice: (newPrice: unknown, oneDayPrice: unknown, priceChange: unknown) => void
   updateTradegen: (data: IGlobalDataTradegen) => void
+  updateTransactionsTradegen: (txns: unknown) => void
 }
 
 const GlobalDataContext = createContext<[IGlobalDataState, IGlobalDataActions]>(null)
@@ -113,6 +118,13 @@ function reducer(state, { type, payload }) {
       return {
         ...state,
         transactions,
+      }
+    }
+    case UPDATE_TXNS_TRADEGEN: {
+      const { transactionsTradegen } = payload
+      return {
+        ...state,
+        transactionsTradegen,
       }
     }
     case UPDATE_CHART: {
@@ -193,6 +205,15 @@ export default function Provider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  const updateTransactionsTradegen = useCallback((transactionsTradegen) => {
+    dispatch({
+      type: UPDATE_TXNS_TRADEGEN,
+      payload: {
+        transactionsTradegen,
+      },
+    })
+  }, [])
+
   const updateChart = useCallback((daily, weekly) => {
     dispatch({
       type: UPDATE_CHART,
@@ -264,6 +285,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
             updateAllPairsInUbeswap,
             updateAllTokensInUbeswap,
             updateTradegen,
+            updateTransactionsTradegen
           },
         ],
         [
@@ -275,7 +297,8 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           updateCeloPrice,
           updateAllPairsInUbeswap,
           updateAllTokensInUbeswap,
-          updateTradegen
+          updateTradegen,
+          updateTransactionsTradegen
         ]
       )}
     >
@@ -982,4 +1005,67 @@ async function getGlobalDataTradegen(): Promise<IGlobalDataTradegen | null> {
   }
 
   return data
+}
+
+/**
+ * Get and format transactions for global page
+ */
+const getGlobalTransactionsTradegen = async () => {
+  const depositPools = []
+  const withdrawPools = []
+  const mintFeePools = []
+  const depositNFTPools = []
+  const withdrawNFTPools = []
+
+  try {
+    const result = await tradegenClient.query<GlobalTransactionsTradegenQuery>({
+      query: GLOBAL_TXNS_TRADEGEN,
+      fetchPolicy: 'cache-first',
+    })
+    result?.data?.poolTransactions &&
+      result.data.poolTransactions.map((transaction) => {
+        if (transaction.deposit) {
+          return depositPools.push(transaction.deposit)
+        }
+        if (transaction.withdraw) {
+          return withdrawPools.push(transaction.withdraw)
+        }
+        if (transaction.mintFee) {
+          return mintFeePools.push(transaction.mintFee)
+        }
+        return true
+      })
+    result?.data?.nftpoolTransactions &&
+      result.data.nftpoolTransactions.map((transaction) => {
+        if (transaction.deposit) {
+          return depositNFTPools.push(transaction.deposit)
+        }
+        if (transaction.withdraw) {
+          return withdrawNFTPools.push(transaction.withdraw)
+        }
+        return true
+      })
+
+    return { depositPools, withdrawPools, mintFeePools, depositNFTPools, withdrawNFTPools }
+  } catch (e) {
+    console.log(e)
+  }
+
+  return {}
+}
+
+export function useGlobalTransactionsTradegen() {
+  const [state, { updateTransactionsTradegen }] = useGlobalDataContext()
+  const transactionsTradegen = state?.transactionsTradegen
+  useEffect(() => {
+    async function fetchData() {
+      if (!transactionsTradegen) {
+        const txns = await getGlobalTransactionsTradegen()
+        console.log(txns)
+        updateTransactionsTradegen(txns)
+      }
+    }
+    fetchData()
+  }, [updateTransactionsTradegen, transactionsTradegen])
+  return transactionsTradegen
 }
