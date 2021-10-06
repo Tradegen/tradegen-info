@@ -1,8 +1,7 @@
 import React from 'react'
 import styled, { css, keyframes } from 'styled-components'
 
-import logo from '../../assets/logo.svg'
-import logoDark from '../../assets/logo-dark.svg'
+import logo from '../../assets/name.png'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
 
 const pulse = keyframes`
@@ -37,12 +36,11 @@ const AnimatedImg = styled.div`
 `
 
 const LocalLoader = ({ fill }) => {
-  const [darkMode] = useDarkModeManager()
 
   return (
     <Wrapper fill={fill}>
       <AnimatedImg>
-        <img src={darkMode ? logoDark : logo} alt="loading-icon" />
+        <img src={logo} alt="loading-icon" />
       </AnimatedImg>
     </Wrapper>
   )
