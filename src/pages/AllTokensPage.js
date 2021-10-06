@@ -7,12 +7,12 @@ import { FullWrapper, PageWrapper } from '../components'
 import Panel from '../components/Panel'
 import { RowBetween } from '../components/Row'
 import Search from '../components/Search'
-import TopTokenList from '../components/TokenList'
-import { useAllTokenData } from '../contexts/TokenData'
 import { TYPE } from '../Theme'
+import { useAllPoolData } from '../contexts/PoolData'
+import TopPoolList from '../components/PoolList'
 
-function AllTokensPage() {
-  const allTokens = useAllTokenData()
+function AllPoolsPage() {
+  const allPools = useAllPoolData()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -24,15 +24,15 @@ function AllTokensPage() {
     <PageWrapper>
       <FullWrapper>
         <RowBetween>
-          <TYPE.largeHeader>Top Tokens</TYPE.largeHeader>
+          <TYPE.largeHeader>Top Pools</TYPE.largeHeader>
           {!below600 && <Search small={true} />}
         </RowBetween>
         <Panel style={{ marginTop: '6px', padding: below600 && '1rem 0 0 0 ' }}>
-          <TopTokenList tokens={allTokens} itemMax={50} />
+          <TopPoolList pools={allPools} itemMax={50} />
         </Panel>
       </FullWrapper>
     </PageWrapper>
   )
 }
 
-export default AllTokensPage
+export default AllPoolsPage
