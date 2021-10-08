@@ -1157,7 +1157,7 @@ export function useTopPositions() {
               name: entry.pool.name,
               address: entry.pool.id,
               usd:
-                parseFloat((BigInt(entry.pool.tokenPrice) / BigInt("10000000000000000")).toString()) * parseFloat(entry.tokenBalance.toString()) / 100
+                parseFloat((BigInt(entry.pool.tokenPrice) * BigInt(entry.tokenBalance) / BigInt("10000000000000000000000000000000000")).toString()) / 100
             })
           })
         })
@@ -1172,7 +1172,7 @@ export function useTopPositions() {
               name: entry.NFTPool.name,
               address: entry.NFTPool.id,
               usd:
-                parseFloat((BigInt(entry.pool.tokenPrice) / BigInt("10000000000000000")).toString()) * parseFloat(entry.tokenBalance.toString()) / 100
+                parseFloat((BigInt(entry.NFTPool.tokenPrice) / BigInt("10000000000000000")).toString()) * parseFloat(entry.tokenBalance.toString()) / 100
             })
           })
         })
