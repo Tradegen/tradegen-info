@@ -15,7 +15,7 @@ import {
   ManagedInvestmentsQuery,
   ManagedInvestmentsQueryVariables
 } from '../apollo/generated/types'
-import { PAIR_DAY_DATA_BULK, USER_HISTORY, USER_POSITIONS, USER_TRANSACTIONS_TRADEGEN } from '../apollo/queries'
+import { PAIR_DAY_DATA_BULK, USER_HISTORY, USER_POSITIONS, USER_TRANSACTIONS_TRADEGEN, USER_POSITIONS_TRADEGEN, MANAGED_INVESTMENTS } from '../apollo/queries'
 import { timeframeOptions } from '../constants'
 import { getHistoricalPairReturns, getLPReturnsOnPair } from '../utils/returns'
 import { useStartTimestamp, useTimeframe } from './Application'
@@ -478,43 +478,96 @@ export function useUserPositions(account) {
   const [state, { updatePositions }] = useUserContext()
   const positions = state?.[account]?.[POSITIONS_KEY]
 
-  const snapshots = useUserSnapshots(account)
-  const [celoPrice] = useCeloPrice()
-
   useEffect(() => {
     async function fetchData(account) {
       try {
-        const result = await client.query<LiquidityPositionsQuery, LiquidityPositionsQueryVariables>({
-          query: USER_POSITIONS,
+        const result = await tradegenClient.query<InvestmentPositionsQuery, InvestmentPositionsQueryVariables>({
+          query: USER_POSITIONS_TRADEGEN,
           variables: {
             user: account,
           },
           fetchPolicy: 'no-cache',
         })
-        if (result?.data?.liquidityPositions) {
-          const formattedPositions = await Promise.all(
-            result?.data?.liquidityPositions.map(async (positionData) => {
-              const returnData = await getLPReturnsOnPair(account, positionData.pair, snapshots)
-              return {
-                ...positionData,
-                ...returnData,
-              }
+        let formattedPositions = [];
+        if (result?.data?.poolPositions) {
+          result?.data?.poolPositions.map(async (positionData) => {
+            return formattedPositions.push({
+              address: positionData.pool.id,
+              type: "Pool",
+              name: positionData.pool.name,
+              USDValue: positionData.USDValue
             })
-          )
-          updatePositions(account, formattedPositions)
+          })
         }
+        if (result?.data?.nftpoolPositions) {
+          result?.data?.nftpoolPositions.map(async (positionData) => {
+            return formattedPositions.push({
+              address: positionData.NFTPool.id,
+              type: "NFT Pool",
+              name: positionData.NFTPool.name,
+              USDValue: positionData.USDValue
+            })
+          })
+        }
+        console.log(formattedPositions)
+        updatePositions(account, formattedPositions)
       } catch (e) {
         console.log(e)
       }
     }
-    if (!positions && account && celoPrice && snapshots) {
+    if (!positions && account) {
       fetchData(account)
     }
-  }, [account, positions, updatePositions, celoPrice, snapshots])
+  }, [account, positions, updatePositions])
 
   return positions
 }
 
-export function useMiningPositions(account) {
-  return []
+export function useManagedInvestments(account) {
+  const [state, { updateManagedInvestments }] = useUserContext()
+  const managedInvestments = state?.[account]?.[MANAGED_INVESTMENTS_KEY]
+
+  useEffect(() => {
+    async function fetchData(account) {
+      try {
+        const result = await tradegenClient.query<ManagedInvestmentsQuery, ManagedInvestmentsQueryVariables>({
+          query: MANAGED_INVESTMENTS,
+          variables: {
+            manager: account,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        let formattedManagedInvestments = [];
+        if (result?.data?.managedInvestments) {
+          result?.data?.managedInvestments.map(async (investmentData) => {
+            if (investmentData.pool) {
+              return formattedManagedInvestments.push({
+                address: investmentData.pool.id,
+                type: "Pool",
+                name: investmentData.pool.name,
+                USDValue: investmentData.pool.totalValueLockedUSD
+              })
+            }
+            if (investmentData.NFTPool) {
+              return formattedManagedInvestments.push({
+                address: investmentData.NFTPool.id,
+                type: "NFT Pool",
+                name: investmentData.NFTPool.name,
+                USDValue: investmentData.NFTPool.totalValueLockedUSD
+              })
+            }
+          })
+        }
+        console.log(formattedManagedInvestments)
+        updateManagedInvestments(account, formattedManagedInvestments)
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    if (!managedInvestments && account) {
+      fetchData(account)
+    }
+  }, [account, managedInvestments, updateManagedInvestments])
+
+  return managedInvestments
 }

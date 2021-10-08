@@ -16,9 +16,8 @@ import Row, { AutoRow, RowBetween, RowFixed } from '../components/Row'
 import Search from '../components/Search'
 import TxnList from '../components/TxnList'
 import UserChart from '../components/UserChart'
-import { FEE_WARNING_TOKENS } from '../constants'
 import { useSavedAccounts } from '../contexts/LocalStorage'
-import { useMiningPositions, useUserPositions, useUserTransactions } from '../contexts/User'
+import { useManagedInvestments, useUserPositions, useUserTransactions } from '../contexts/User'
 import { TYPE } from '../Theme'
 import { formattedNum } from '../utils'
 
@@ -37,38 +36,6 @@ const DashboardWrapper = styled.div`
   width: 100%;
 `
 
-const DropdownWrapper = styled.div`
-  position: relative;
-  margin-bottom: 1rem;
-  border: 1px solid #edeef2;
-  border-radius: 12px;
-`
-
-const Flyout = styled.div`
-  position: absolute;
-  top: 38px;
-  left: -1px;
-  width: 100%;
-  background-color: ${({ theme }) => theme.bg1};
-  z-index: 999;
-  border-bottom-right-radius: 10px;
-  border-bottom-left-radius: 10px;
-  padding-top: 4px;
-  border: 1px solid #edeef2;
-  border-top: none;
-`
-
-const MenuRow = styled(Row)`
-  width: 100%;
-  padding: 12px 0;
-  padding-left: 12px;
-
-  :hover {
-    cursor: pointer;
-    background-color: ${({ theme }) => theme.bg2};
-  }
-`
-
 const PanelWrapper = styled.div`
   grid-template-columns: 1fr;
   grid-template-rows: max-content;
@@ -78,27 +45,17 @@ const PanelWrapper = styled.div`
   align-items: start;
 `
 
-const Warning = styled.div`
-  background-color: ${({ theme }) => theme.bg2};
-  color: ${({ theme }) => theme.text1};
-  padding: 1rem;
-  font-weight: 600;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  width: calc(100% - 2rem);
-`
-
 function AccountPage({ account }) {
   // get data for this account
   const transactions = useUserTransactions(account)
   const positions = useUserPositions(account)
-  const miningPositions = useMiningPositions(account)
+  const managedInvestments = useManagedInvestments(account)
+
+  console.log(positions)
 
   // settings for list view and dropdowns
   const hideLPContent = positions && positions.length === 0
   const [activePosition, setActivePosition] = useState()
-
-  const dynamicPositions = activePosition ? [activePosition] : positions
 
   useEffect(() => {
     window.scrollTo({
@@ -148,17 +105,6 @@ function AccountPage({ account }) {
           </RowBetween>
         </Header>
         <DashboardWrapper>
-          {!hideLPContent && (
-            <PanelWrapper>
-              <Panel style={{ gridColumn: '1' }}>
-                {activePosition ? (
-                  <PairReturnsChart account={account} position={activePosition} />
-                ) : (
-                  <UserChart account={account} position={activePosition} />
-                )}
-              </Panel>
-            </PanelWrapper>
-          )}
           <TYPE.main fontSize={'1.125rem'} style={{ marginTop: '3rem' }}>
             Positions
           </TYPE.main>{' '}
@@ -177,8 +123,8 @@ function AccountPage({ account }) {
               marginTop: '1.5rem',
             }}
           >
-            {miningPositions && <MiningPositionList miningPositions={miningPositions} />}
-            {!miningPositions && (
+            {managedInvestments && <PositionList positions={managedInvestments} />}
+            {!managedInvestments && (
               <AutoColumn gap="8px" justify="flex-start">
                 <TYPE.main>No managed investments.</TYPE.main>
                 <AutoRow gap="8px" justify="flex-start">

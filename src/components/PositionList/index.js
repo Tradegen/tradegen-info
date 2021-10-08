@@ -7,16 +7,12 @@ import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
 
 import { Divider } from '../../components'
-import { useCeloPrice } from '../../contexts/GlobalData'
 import { TYPE } from '../../Theme'
-import { formattedNum, getPoolLink } from '../../utils'
-import { ButtonLight } from '../ButtonStyled'
+import { formattedNum } from '../../utils'
 import { AutoColumn } from '../Column'
-import DoubleTokenLogo from '../DoubleLogo'
 import FormattedName from '../FormattedName'
 import Link, { CustomLink } from '../Link'
 import LocalLoader from '../LocalLoader'
-import { RowFixed } from '../Row'
 
 dayjs.extend(utc)
 
@@ -104,8 +100,7 @@ const DataText = styled(Flex)`
 `
 
 const SORT_FIELD = {
-  VALUE: 'VALUE',
-  UBESWAP_RETURN: 'UBESWAP_RETURN',
+  VALUE: 'VALUE'
 }
 
 function PositionList({ positions }) {
@@ -136,119 +131,35 @@ function PositionList({ positions }) {
     }
   }, [positions])
 
-  const [celoPrice] = useCeloPrice()
-
   const ListItem = ({ position, index }) => {
-    const poolOwnership = position.liquidityTokenBalance / position.pair.totalSupply
-    const valueUSD = poolOwnership * position.pair.reserveUSD
-
     return (
-      <DashGrid style={{ opacity: poolOwnership > 0 ? 1 : 0.6 }} focus={true}>
+      <DashGrid focus={true}>
         {!below740 && <DataText area="number">{index}</DataText>}
         <DataText area="name" justifyContent="flex-start" alignItems="flex-start">
-          <AutoColumn gap="8px" justify="flex-start" align="flex-start">
-            <DoubleTokenLogo size={16} a0={position.pair.token0.id} a1={position.pair.token1.id} margin={!below740} />
-          </AutoColumn>
-          <AutoColumn gap="8px" justify="flex-start" style={{ marginLeft: '20px' }}>
-            <CustomLink to={'/pair/' + position.pair.id}>
-              <TYPE.main style={{ whiteSpace: 'nowrap' }} to={'/pair/'}>
+          <AutoColumn gap="8px" justify="flex-start">
+            <CustomLink to={(position.type == "Pool") ? '/pool/' + position.address : 'nftpool/' + position.address}>
+              <TYPE.main style={{ whiteSpace: 'nowrap' }} to={'/pool/'}>
                 <FormattedName
-                  text={position.pair.token0.symbol + '-' + position.pair.token1.symbol}
-                  maxCharacters={below740 ? 10 : 18}
+                  text={position.name}
                 />
               </TYPE.main>
             </CustomLink>
-
-            <RowFixed gap="8px" justify="flex-start">
-              <Link
-                external
-                href={getPoolLink(position.pair.token0.id, position.pair.token1.id)}
-                style={{ marginRight: '.5rem' }}
-              >
-                <ButtonLight style={{ padding: '4px 6px', borderRadius: '4px' }}>Add</ButtonLight>
-              </Link>
-              {poolOwnership > 0 && (
-                <Link external href={getPoolLink(position.pair.token0.id, position.pair.token1.id, true)}>
-                  <ButtonLight style={{ padding: '4px 6px', borderRadius: '4px' }}>Remove</ButtonLight>
-                </Link>
-              )}
-            </RowFixed>
           </AutoColumn>
         </DataText>
-        <DataText area="ubeswap">
-          <AutoColumn gap="12px" justify="flex-end">
-            <TYPE.main>{formattedNum(valueUSD, true, true)}</TYPE.main>
-            <AutoColumn gap="4px" justify="flex-end">
-              <RowFixed>
-                <TYPE.small fontWeight={400}>
-                  {formattedNum(poolOwnership * parseFloat(position.pair.reserve0))}{' '}
-                </TYPE.small>
-                <FormattedName
-                  text={position.pair.token0.symbol}
-                  maxCharacters={below740 ? 10 : 18}
-                  margin={true}
-                  fontSize={'11px'}
-                />
-              </RowFixed>
-              <RowFixed>
-                <TYPE.small fontWeight={400}>
-                  {formattedNum(poolOwnership * parseFloat(position.pair.reserve1))}{' '}
-                </TYPE.small>
-                <FormattedName
-                  text={position.pair.token1.symbol}
-                  maxCharacters={below740 ? 10 : 18}
-                  margin={true}
-                  fontSize={'11px'}
-                />
-              </RowFixed>
-            </AutoColumn>
+        <DataText area="number">
+          <AutoColumn gap="8px" justify="flex-end">
+            <FormattedName
+              text={position.type}
+            />
           </AutoColumn>
         </DataText>
-        {!below500 && (
-          <DataText area="return">
-            <AutoColumn gap="12px" justify="flex-end">
-              <TYPE.main color={'green'}>
-                <RowFixed>{formattedNum(position?.fees.sum, true, true)}</RowFixed>
-              </TYPE.main>
-              <AutoColumn gap="4px" justify="flex-end">
-                <RowFixed>
-                  <TYPE.small fontWeight={400}>
-                    {parseFloat(position.pair.token0.derivedETH)
-                      ? formattedNum(
-                          position?.fees.sum / (parseFloat(position.pair.token0.derivedETH) * celoPrice) / 2,
-                          false,
-                          true
-                        )
-                      : 0}{' '}
-                  </TYPE.small>
-                  <FormattedName
-                    text={position.pair.token0.symbol}
-                    maxCharacters={below740 ? 10 : 18}
-                    margin={true}
-                    fontSize={'11px'}
-                  />
-                </RowFixed>
-                <RowFixed>
-                  <TYPE.small fontWeight={400}>
-                    {parseFloat(position.pair.token1.derivedETH)
-                      ? formattedNum(
-                          position?.fees.sum / (parseFloat(position.pair.token1.derivedETH) * celoPrice) / 2,
-                          false,
-                          true
-                        )
-                      : 0}{' '}
-                  </TYPE.small>
-                  <FormattedName
-                    text={position.pair.token1.symbol}
-                    maxCharacters={below740 ? 10 : 18}
-                    margin={true}
-                    fontSize={'11px'}
-                  />
-                </RowFixed>
-              </AutoColumn>
-            </AutoColumn>
-          </DataText>
-        )}
+        <DataText area="number">
+          <AutoColumn gap="8px" justify="flex-start">
+            <FormattedName
+              text={formattedNum(position.USDValue / 1000000000000000000, true)}
+            />
+          </AutoColumn>
+        </DataText>
       </DashGrid>
     )
   }
@@ -256,21 +167,9 @@ function PositionList({ positions }) {
   const positionsSorted =
     positions &&
     positions
-
       .sort((p0, p1) => {
-        if (sortedColumn === SORT_FIELD.PRINCIPAL) {
-          return p0?.principal?.usd > p1?.principal?.usd ? (sortDirection ? -1 : 1) : sortDirection ? 1 : -1
-        }
-        if (sortedColumn === SORT_FIELD.HODL) {
-          return p0?.hodl?.sum > p1?.hodl?.sum ? (sortDirection ? -1 : 1) : sortDirection ? 1 : -1
-        }
-        if (sortedColumn === SORT_FIELD.UBESWAP_RETURN) {
-          return p0?.ubeswap?.return > p1?.ubeswap?.return ? (sortDirection ? -1 : 1) : sortDirection ? 1 : -1
-        }
         if (sortedColumn === SORT_FIELD.VALUE) {
-          const bal0 = (p0.liquidityTokenBalance / p0.pair.totalSupply) * p0.pair.reserveUSD
-          const bal1 = (p1.liquidityTokenBalance / p1.pair.totalSupply) * p1.pair.reserveUSD
-          return bal0 > bal1 ? (sortDirection ? -1 : 1) : sortDirection ? 1 : -1
+          return p0.USDValue > p1.USDValue ? (sortDirection ? -1 : 1) : sortDirection ? 1 : -1
         }
         return 1
       })
@@ -295,6 +194,9 @@ function PositionList({ positions }) {
         <Flex alignItems="flex-start" justifyContent="flex-start">
           <TYPE.main area="number">Name</TYPE.main>
         </Flex>
+        <Flex alignItems="flex-start" justifyContent="flex-end">
+          <TYPE.main area="number">Type</TYPE.main>
+        </Flex>
         <Flex alignItems="center" justifyContent="flexEnd">
           <ClickableText
             area="ubeswap"
@@ -303,23 +205,9 @@ function PositionList({ positions }) {
               setSortDirection(sortedColumn !== SORT_FIELD.VALUE ? true : !sortDirection)
             }}
           >
-            {below740 ? 'Value' : 'Liquidity'} {sortedColumn === SORT_FIELD.VALUE ? (!sortDirection ? '↑' : '↓') : ''}
+            {'Value'} {sortedColumn === SORT_FIELD.VALUE ? (!sortDirection ? '↑' : '↓') : ''}
           </ClickableText>
         </Flex>
-        {!below500 && (
-          <Flex alignItems="center" justifyContent="flexEnd">
-            <ClickableText
-              area="return"
-              onClick={() => {
-                setSortedColumn(SORT_FIELD.UBESWAP_RETURN)
-                setSortDirection(sortedColumn !== SORT_FIELD.UBESWAP_RETURN ? true : !sortDirection)
-              }}
-            >
-              {below740 ? 'Fees' : 'Total Fees Earned'}{' '}
-              {sortedColumn === SORT_FIELD.UBESWAP_RETURN ? (!sortDirection ? '↑' : '↓') : ''}
-            </ClickableText>
-          </Flex>
-        )}
       </DashGrid>
       <Divider />
       <List p={0}>{!positionsSorted ? <LocalLoader /> : positionsSorted}</List>
