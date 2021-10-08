@@ -19,6 +19,7 @@ import GlobalPage from './pages/GlobalPage'
 import PairPage from './pages/PairPage'
 import TokenPage from './pages/TokenPage'
 import PoolPage from './pages/PoolPage'
+import NFTPoolPage from './pages/NFTPoolPage'
 import { isAddress } from './utils'
 
 const AppWrapper = styled.div`
@@ -145,15 +146,14 @@ function App() {
               <Route
                 exacts
                 strict
-                path="/pair/:pairAddress"
+                path="/nftpool/:nftPoolAddress"
                 render={({ match }) => {
                   if (
-                    isAddress(match.params.pairAddress.toLowerCase()) &&
-                    !Object.keys(PAIR_BLACKLIST).includes(match.params.pairAddress.toLowerCase())
+                    isAddress(match.params.nftPoolAddress.toLowerCase())
                   ) {
                     return (
                       <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                        <PairPage pairAddress={match.params.pairAddress.toLowerCase()} />
+                        <NFTPoolPage address={match.params.nftPoolAddress.toLowerCase()} />
                       </LayoutWrapper>
                     )
                   } else {
