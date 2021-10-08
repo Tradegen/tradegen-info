@@ -1252,3 +1252,102 @@ export const ALL_NFT_POOLS = gql`
     }
   }
 `
+
+export const USER_TRANSACTIONS_TRADEGEN = gql`
+  query UserTransactionsTradegen($user: String) {
+    depositPools(first: 20, where: { userAddress: $user }, orderBy: timestamp, orderDirection: desc) {
+      poolTransaction {
+        id
+        timestamp
+        pool {
+          name
+        }
+      }
+      userAddress
+      amount
+    }
+    withdrawPools(first: 20, where: { userAddress: $user }, orderBy: timestamp, orderDirection: desc) {
+      poolTransaction {
+        id
+        timestamp
+        pool {
+          name
+        }
+      }
+      userAddress
+      tokenAmount
+      USDAmount
+    }
+    mintFeePools(first: 20, where: { managerAddress: $user }, orderBy: timestamp, orderDirection: desc) {
+      poolTransaction {
+        id
+        timestamp
+        pool {
+          name
+        }
+      }
+      managerAddress
+      feesMinted
+    }
+    depositNFTPools(first: 20, where: { userAddress: $user }, orderBy: timestamp, orderDirection: desc) {
+      NFTPoolTransaction {
+        id
+        timestamp
+        NFTPool {
+          name
+        }
+      }
+      userAddress
+      tokenAmount
+      USDAmount
+    }
+    withdrawNFTPools(first: 20, where: { userAddress: $user }, orderBy: timestamp, orderDirection: desc) {
+      NFTPoolTransaction {
+        id
+        timestamp
+        NFTPool {
+          name
+        }
+      }
+      userAddress
+      tokenAmount
+      USDAmount
+    }
+  }
+`
+
+export const USER_POSITIONS_TRADEGEN = gql`
+  query investmentPositions($user: String!) {
+    poolPositions(where: { user: $user }) {
+      pool {
+        id
+        name
+      }
+      USDValue
+    }
+    nftpoolPositions(where: { user: $user }) {
+      NFTPool {
+        id
+        name
+      }
+      USDValue
+    }
+  }
+`
+
+export const MANAGED_INVESTMENTS = gql`
+  query managedInvestments($manager: String!) {
+    managedInvestments(where: { manager: $manager }) {
+      pool {
+        id
+        name
+        totalValueLockedUSD
+      }
+      NFTPool {
+        id
+        name
+        totalValueLockedUSD
+      }
+    }
+  }
+`

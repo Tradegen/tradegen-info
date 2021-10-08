@@ -2,15 +2,20 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react'
 
-import { client } from '../apollo/client'
+import { client, tradegenClient } from '../apollo/client'
 import {
   LiquidityPositionsQuery,
   LiquidityPositionsQueryVariables,
   UserHistoryQuery,
   UserHistoryQueryVariables,
   UserTransactionsQuery,
+  UserTransactionsTradegenQuery,
+  InvestmentPositionsQuery,
+  InvestmentPositionsQueryVariables,
+  ManagedInvestmentsQuery,
+  ManagedInvestmentsQueryVariables
 } from '../apollo/generated/types'
-import { PAIR_DAY_DATA_BULK, USER_HISTORY, USER_POSITIONS, USER_TRANSACTIONS } from '../apollo/queries'
+import { PAIR_DAY_DATA_BULK, USER_HISTORY, USER_POSITIONS, USER_TRANSACTIONS_TRADEGEN } from '../apollo/queries'
 import { timeframeOptions } from '../constants'
 import { getHistoricalPairReturns, getLPReturnsOnPair } from '../utils/returns'
 import { useStartTimestamp, useTimeframe } from './Application'
@@ -24,16 +29,18 @@ const UPDATE_POSITIONS = 'UPDATE_POSITIONS '
 const UPDATE_MINING_POSITIONS = 'UPDATE_MINING_POSITIONS'
 const UPDATE_USER_POSITION_HISTORY = 'UPDATE_USER_POSITION_HISTORY'
 const UPDATE_USER_PAIR_RETURNS = 'UPDATE_USER_PAIR_RETURNS'
+const UPDATE_MANAGED_INVESTMENTS = 'UPDATE_MANAGED_INVESTMENTS'
 
 const TRANSACTIONS_KEY = 'TRANSACTIONS_KEY'
 const POSITIONS_KEY = 'POSITIONS_KEY'
 const MINING_POSITIONS_KEY = 'MINING_POSITIONS_KEY'
 const USER_SNAPSHOTS = 'USER_SNAPSHOTS'
 const USER_PAIR_RETURNS_KEY = 'USER_PAIR_RETURNS_KEY'
+const MANAGED_INVESTMENTS_KEY = 'MANAGED_INVESTMENTS_KEY'
 
 type IUserContext = [
   any,
-  { updateTransactions; updatePositions; updateMiningPositions; updateUserSnapshots; updateUserPairReturns }
+  { updateTransactions; updatePositions; updateMiningPositions; updateUserSnapshots; updateUserPairReturns, updateManagedInvestments }
 ]
 
 const UserContext = createContext<IUserContext | undefined>(undefined)
@@ -66,6 +73,13 @@ function reducer(state, { type, payload }) {
       return {
         ...state,
         [account]: { ...state?.[account], [MINING_POSITIONS_KEY]: miningPositions },
+      }
+    }
+    case UPDATE_MANAGED_INVESTMENTS: {
+      const { account, managedInvestments } = payload
+      return {
+        ...state,
+        [account]: { ...state?.[account], [MANAGED_INVESTMENTS_KEY]: managedInvestments },
       }
     }
     case UPDATE_USER_POSITION_HISTORY: {
@@ -131,6 +145,16 @@ export default function Provider({ children }: { children?: React.ReactNode }) {
     })
   }, [])
 
+  const updateManagedInvestments = useCallback((account, managedInvestments) => {
+    dispatch({
+      type: UPDATE_MANAGED_INVESTMENTS,
+      payload: {
+        account,
+        managedInvestments,
+      },
+    })
+  }, [])
+
   const updateUserSnapshots = useCallback((account, historyData) => {
     dispatch({
       type: UPDATE_USER_POSITION_HISTORY,
@@ -157,9 +181,9 @@ export default function Provider({ children }: { children?: React.ReactNode }) {
       value={useMemo(
         () => [
           state,
-          { updateTransactions, updatePositions, updateMiningPositions, updateUserSnapshots, updateUserPairReturns },
+          { updateTransactions, updatePositions, updateMiningPositions, updateUserSnapshots, updateUserPairReturns, updateManagedInvestments },
         ],
-        [state, updateTransactions, updatePositions, updateMiningPositions, updateUserSnapshots, updateUserPairReturns]
+        [state, updateTransactions, updatePositions, updateMiningPositions, updateUserSnapshots, updateUserPairReturns, updateManagedInvestments]
       )}
     >
       {children}
@@ -173,8 +197,8 @@ export function useUserTransactions(account) {
   useEffect(() => {
     async function fetchData(account) {
       try {
-        const result = await client.query<UserTransactionsQuery>({
-          query: USER_TRANSACTIONS,
+        const result = await tradegenClient.query<UserTransactionsTradegenQuery>({
+          query: USER_TRANSACTIONS_TRADEGEN,
           variables: {
             user: account,
           },
@@ -427,7 +451,7 @@ export function useUserLiquidityChart(account) {
               totalUSD +
               (ownershipPerPair[dayData.pairAddress]
                 ? (parseFloat(ownershipPerPair[dayData.pairAddress].lpTokenBalance) / parseFloat(dayData.totalSupply)) *
-                  parseFloat(dayData.reserveUSD)
+                parseFloat(dayData.reserveUSD)
                 : 0))
           } else {
             return totalUSD
