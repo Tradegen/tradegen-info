@@ -669,6 +669,7 @@ export function usePoolTransactions(poolAddress) {
         async function checkForTxns() {
             if (!tokenTxns) {
                 const transactions = await getPoolTransactions([poolAddress])
+                console.log(transactions)
                 updateTokenTxns(poolAddress, transactions)
             }
         }

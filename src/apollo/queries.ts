@@ -911,6 +911,8 @@ const PoolFields = gql`
     totalSupply
     tradeVolumeUSD
     totalValueLockedUSD
+    positionAddresses
+    positionBalances
   }
 `
 
@@ -956,6 +958,9 @@ export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
       poolTransaction {
         id
         timestamp
+        pool {
+          name
+        }
       }
       userAddress
       amount
@@ -964,6 +969,9 @@ export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
       poolTransaction {
         id
         timestamp
+        pool {
+          name
+        }
       }
       userAddress
       tokenAmount
@@ -973,6 +981,9 @@ export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
       poolTransaction {
         id
         timestamp
+        pool {
+          name
+        }
       }
       managerAddress
       feesMinted
@@ -981,6 +992,9 @@ export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
       NFTPoolTransaction {
         id
         timestamp
+        NFTPool {
+          name
+        }
       }
       userAddress
       tokenAmount
@@ -990,6 +1004,9 @@ export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
       NFTPoolTransaction {
         id
         timestamp
+        NFTPool {
+          name
+        }
       }
       userAddress
       tokenAmount
@@ -1044,6 +1061,8 @@ const NFTPoolFields = gql`
     tradeVolumeUSD
     totalValueLockedUSD
     feesCollected
+    positionAddresses
+    positionBalances
   }
 `
 

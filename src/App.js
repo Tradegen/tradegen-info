@@ -18,6 +18,7 @@ import AllTokensPage from './pages/AllTokensPage'
 import GlobalPage from './pages/GlobalPage'
 import PairPage from './pages/PairPage'
 import TokenPage from './pages/TokenPage'
+import PoolPage from './pages/PoolPage'
 import { isAddress } from './utils'
 
 const AppWrapper = styled.div`
@@ -116,9 +117,9 @@ function App() {
           </WarningWrapper>
         )}
         {globalData &&
-        Object.keys(globalData).length > 0 &&
-        globalChartData &&
-        Object.keys(globalChartData).length > 0 ? (
+          Object.keys(globalData).length > 0 &&
+          globalChartData &&
+          Object.keys(globalChartData).length > 0 ? (
           <BrowserRouter>
             <Route component={GoogleAnalyticsReporter} />
             <Switch>
@@ -133,7 +134,7 @@ function App() {
                   ) {
                     return (
                       <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                        <TokenPage address={match.params.tokenAddress.toLowerCase()} />
+                        <PoolPage address={match.params.tokenAddress.toLowerCase()} />
                       </LayoutWrapper>
                     )
                   } else {
