@@ -6,11 +6,6 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { client, tradegenClient } from '../apollo/client'
 import {
   AllPairsQuery,
-  AllPairsQueryVariables,
-  AllPoolsQuery,
-  AllPoolsQueryVariables,
-  AllNftPoolsQuery,
-  AllNftPoolsQueryVariables,
   CeloPriceQuery,
   CeloPriceQueryVariables,
   CurrentCeloPriceQuery,
@@ -26,8 +21,6 @@ import {
   GlobalDataTradegenQueryVariables
 } from '../apollo/generated/types'
 import {
-  ALL_PAIRS,
-  ALL_TOKENS,
   ALL_POOLS,
   ALL_NFT_POOLS,
   CELO_PRICE,

@@ -203,7 +203,7 @@ function TopNFTPoolList({ NFTPools, itemMax = 10, useTracked = false }) {
                 <DataText area="cap">{item.maxSupply.toString()} tokens</DataText>
                 {!below1080 && (
                     <DataText area="price" color="text" fontWeight="500">
-                        {formattedNum(parseFloat((BigInt(item.tokenPrice.toString()) / BigInt("1000000000000000000")).toString()), true)}
+                        {formattedNum(parseFloat((BigInt(item.tokenPrice.toString()) / BigInt("10000000000000000")).toString()) / 100, true)}
                     </DataText>
                 )}
                 {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}

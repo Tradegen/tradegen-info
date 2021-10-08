@@ -221,28 +221,28 @@ function TxnList({ transactions, nameOverride, color }) {
       }
       //NFT Pools
       if (transactions.depositNFTPools.length > 0) {
-        transactions.depositPools.map((deposit) => {
+        transactions.depositNFTPools.map((deposit) => {
           let newTxn = {}
-          newTxn.hash = deposit.nftpoolTransaction.id
-          newTxn.timestamp = deposit.nftpoolTransaction.timestamp
+          newTxn.hash = deposit.NFTPoolTransaction.id
+          newTxn.timestamp = deposit.NFTPoolTransaction.timestamp
           newTxn.type = TXN_TYPE.DEPOSIT
           newTxn.investmentType = "NFT Pool"
           newTxn.account = deposit.userAddress
           newTxn.amountUSD = deposit.USDAmount
-          newTxn.name = deposit.nftpoolTransaction.NFTPool.name
+          newTxn.name = deposit.NFTPoolTransaction.NFTPool.name
           return newTxns.push(newTxn)
         })
       }
       if (transactions.withdrawNFTPools.length > 0) {
         transactions.withdrawNFTPools.map((withdraw) => {
           let newTxn = {}
-          newTxn.hash = withdraw.nftpoolTransaction.id
-          newTxn.timestamp = withdraw.nftpoolTransaction.timestamp
+          newTxn.hash = withdraw.NFTPoolTransaction.id
+          newTxn.timestamp = withdraw.NFTPoolTransaction.timestamp
           newTxn.type = TXN_TYPE.WITHDRAW
           newTxn.investmentType = "NFT Pool"
           newTxn.account = withdraw.userAddress
           newTxn.amountUSD = withdraw.USDAmount
-          newTxn.name = withdraw.nftpoolTransaction.NFTPool.name
+          newTxn.name = withdraw.NFTPoolTransaction.NFTPool.name
           return newTxns.push(newTxn)
         })
       }
