@@ -6,17 +6,13 @@ import styled from 'styled-components'
 
 import { tradegenClient } from '../../apollo/client'
 import { POOL_SEARCH, NFT_POOL_SEARCH } from '../../apollo/queries'
-import { PAIR_BLACKLIST, TOKEN_BLACKLIST } from '../../constants'
 import { useAllPoolsInTradegen, useAllNFTPoolsInTradegen } from '../../contexts/GlobalData'
 import { useAllPoolData, usePoolData } from '../../contexts/PoolData'
 import { useAllNFTPoolData, useNFTPoolData } from '../../contexts/NFTPoolData'
 import { TYPE } from '../../Theme'
-import { updateNameData } from '../../utils/data'
-import DoubleTokenLogo from '../DoubleLogo'
 import FormattedName from '../FormattedName'
 import { BasicLink } from '../Link'
 import Row, { RowFixed } from '../Row'
-import TokenLogo from '../TokenLogo'
 
 const Container = styled.div`
   height: 48px;

@@ -1248,7 +1248,7 @@ async function getAllNFTPoolsOnTradegen() {
         },
         fetchPolicy: 'cache-first',
       })
-      NFTPools = NFTPools.concat(result?.data?.pools)
+      NFTPools = NFTPools.concat(result?.data?.nftpools)
       if (result?.data?.nftpools?.length < TOKENS_TO_FETCH || NFTPools.length > TOKENS_TO_FETCH) {
         allFound = true
       }
