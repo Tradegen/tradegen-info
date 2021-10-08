@@ -101,7 +101,7 @@ const GlobalChart = ({ display }) => {
         <ResponsiveContainer aspect={60 / 28}>
           <TradingViewChart
             data={chartDataFiltered}
-            base={volumeWindow === VOLUME_WINDOW.WEEKLY ? (oneWeekVolumeUSD ?? 0) : (oneDayVolumeUSD ?? 0)}
+            base={volumeWindow === VOLUME_WINDOW.WEEKLY ? (oneWeekVolumeUSD ? (oneWeekVolumeUSD / 1000000000000000000) : 0) : (oneDayVolumeUSD ? (oneDayVolumeUSD / 1000000000000000000) : 0)}
             baseChange={volumeWindow === VOLUME_WINDOW.WEEKLY ? weeklyVolumeChange : volumeChangeUSD}
             title={volumeWindow === VOLUME_WINDOW.WEEKLY ? 'Volume (7d)' : 'Volume'}
             field={volumeWindow === VOLUME_WINDOW.WEEKLY ? 'weeklyVolumeUSD' : 'dailyVolumeUSD'}

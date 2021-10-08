@@ -18,7 +18,7 @@ export const healthClient = new ApolloClient({
 
 export const blockClient = new ApolloClient({
   link: new HttpLink({
-    uri: 'https://api.thegraph.com/subgraphs/name/ubeswap/celo-blocks',
+    uri: 'https://api.thegraph.com/subgraphs/name/tradegen/celo-alfajores-blocks',
   }),
   cache: new InMemoryCache(),
 })
