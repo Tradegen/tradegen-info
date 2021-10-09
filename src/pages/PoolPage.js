@@ -24,6 +24,7 @@ import { usePoolData, usePoolTransactions } from '../contexts/PoolData'
 import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber, shortenAddress } from '../utils'
 import { useSavedTokens } from '../contexts/LocalStorage'
+import InvestmentPositionsList from '../components/InvestmentPositionsList'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -107,8 +108,6 @@ function PoolPage({ address, history }) {
 
     // all transactions with this pool
     const transactions = usePoolTransactions(address)
-
-    console.log(transactions)
 
     // price
     const price = tokenPrice ? formattedNum(tokenPrice / 1000000000000000000, true) : ''
@@ -286,6 +285,13 @@ function PoolPage({ address, history }) {
                                 </Panel>
                             </PanelWrapper>
                         </>
+
+                        <RowBetween mt={40} mb={'1rem'}>
+                            <TYPE.main fontSize={'1.125rem'}>Positions</TYPE.main> <div />
+                        </RowBetween>
+                        <Panel rounded>
+                            {positionAddresses ? <InvestmentPositionsList color={backgroundColor} positions={positionAddresses} balances={positionBalances} /> : <Loader />}
+                        </Panel>
 
                         <RowBetween mt={40} mb={'1rem'}>
                             <TYPE.main fontSize={'1.125rem'}>Transactions</TYPE.main> <div />

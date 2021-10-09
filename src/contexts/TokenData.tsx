@@ -372,7 +372,7 @@ const getTopTokens = async () => {
             twoDayData: twoDayHistory,
           }
         })) ??
-        []
+      []
     )
 
     return bulkResults
@@ -787,9 +787,9 @@ export function useTokenDataCombined(tokenAddresses: readonly string[]) {
           if (res) {
             const newVolume = res
               ? res?.reduce(function (acc, entry) {
-                  acc = acc + parseFloat(entry.oneDayVolumeUSD.toString())
-                  return acc
-                }, 0)
+                acc = acc + parseFloat(entry.oneDayVolumeUSD.toString())
+                return acc
+              }, 0)
               : 0
             updateCombinedVolume(newVolume)
           }
@@ -917,4 +917,27 @@ export function useAllTokenData() {
       res[key] = state[key]
       return res
     }, {})
+}
+
+export function useSelectedTokenData(tokenAddresses) {
+  let data = {};
+
+  useEffect(() => {
+    async function fetchDatas() {
+      Promise.all(
+        tokenAddresses.map(async (address) => {
+          return await getTokenData(address)
+        })
+      )
+        .then((res) => {
+          data = res;
+        })
+        .catch(() => {
+          console.log('error fetching combined data')
+        })
+    }
+    fetchDatas()
+  }, [])
+
+  return data;
 }
