@@ -24,6 +24,7 @@ import { useNFTPoolData, useNFTPoolTransactions } from '../contexts/NFTPoolData'
 import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber, shortenAddress } from '../utils'
 import { useSavedTokens } from '../contexts/LocalStorage'
+import InvestmentPositionsList from '../components/InvestmentPositionsList'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -284,10 +285,17 @@ function NFTPoolPage({ address, history }) {
                                         gridRow: below1080 ? '' : '1/4',
                                     }}
                                 >
-                                    <TokenChart address={address} color={backgroundColor} base={tokenPrice} />
+                                    <TokenChart address={address} color={backgroundColor} base={tokenPrice / 1000000000000000000} />
                                 </Panel>
                             </PanelWrapper>
                         </>
+
+                        <RowBetween mt={40} mb={'1rem'}>
+                            <TYPE.main fontSize={'1.125rem'}>Positions</TYPE.main> <div />
+                        </RowBetween>
+                        <Panel rounded>
+                            {positionAddresses ? <InvestmentPositionsList color={backgroundColor} positions={positionAddresses} balances={positionBalances} /> : <Loader />}
+                        </Panel>
 
                         <RowBetween mt={40} mb={'1rem'}>
                             <TYPE.main fontSize={'1.125rem'}>Transactions</TYPE.main> <div />

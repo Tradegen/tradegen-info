@@ -281,7 +281,7 @@ function PoolPage({ address, history }) {
                                         gridRow: below1080 ? '' : '1/4',
                                     }}
                                 >
-                                    <TokenChart address={address} color={backgroundColor} base={tokenPrice} />
+                                    <TokenChart address={address} color={backgroundColor} base={tokenPrice / 1000000000000000000} />
                                 </Panel>
                             </PanelWrapper>
                         </>

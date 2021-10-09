@@ -13,7 +13,7 @@ import FormattedName from '../FormattedName'
 import { CustomLink } from '../Link'
 import Row from '../Row'
 import TokenLogo from '../TokenLogo'
-import { useSelectedTokenData, useAllTokenData } from '../../contexts/TokenData'
+import { useAllTokenData } from '../../contexts/TokenData'
 
 dayjs.extend(utc)
 
