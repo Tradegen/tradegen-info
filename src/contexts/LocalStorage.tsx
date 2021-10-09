@@ -1,18 +1,18 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer } from 'react'
 
-const UBESWAP = 'UBESWAP'
+const TRADEGEN = 'TRADEGEN'
 
 const VERSION = 'VERSION'
 const CURRENT_VERSION = 0
 const LAST_SAVED = 'LAST_SAVED'
 const DISMISSED_PATHS = 'DISMISSED_PATHS'
 const SAVED_ACCOUNTS = 'SAVED_ACCOUNTS'
-const SAVED_TOKENS = 'SAVED_TOKENS'
-const SAVED_PAIRS = 'SAVED_PAIRS'
+const SAVED_POOLS = 'SAVED_POOLS'
+const SAVED_NFT_POOLS = 'SAVED_NFT_POOLS'
 
 const DARK_MODE = 'DARK_MODE'
 
-const UPDATABLE_KEYS = [DARK_MODE, DISMISSED_PATHS, SAVED_ACCOUNTS, SAVED_PAIRS, SAVED_TOKENS]
+const UPDATABLE_KEYS = [DARK_MODE, DISMISSED_PATHS, SAVED_ACCOUNTS, SAVED_POOLS, SAVED_NFT_POOLS]
 
 const UPDATE_KEY = 'UPDATE_KEY'
 
@@ -21,8 +21,8 @@ type ILocalStorage = {
   [DARK_MODE]: boolean
   [DISMISSED_PATHS]: Record<string, unknown>
   [SAVED_ACCOUNTS]: string[]
-  [SAVED_TOKENS]: Record<string, unknown>
-  [SAVED_PAIRS]: Record<string, unknown>
+  [SAVED_POOLS]: Record<string, unknown>
+  [SAVED_NFT_POOLS]: Record<string, unknown>
 }
 
 const LocalStorageContext = createContext<[ILocalStorage | undefined, any]>([undefined, null])
@@ -56,12 +56,12 @@ function init() {
     [DARK_MODE]: true,
     [DISMISSED_PATHS]: {},
     [SAVED_ACCOUNTS]: [],
-    [SAVED_TOKENS]: {},
-    [SAVED_PAIRS]: {},
+    [SAVED_POOLS]: {},
+    [SAVED_NFT_POOLS]: {},
   }
 
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(UBESWAP))
+    const parsed = JSON.parse(window.localStorage.getItem(TRADEGEN))
     if (parsed[VERSION] !== CURRENT_VERSION) {
       // this is where we could run migration logic
       return defaultLocalStorage
@@ -91,7 +91,7 @@ export function Updater() {
   const [state] = useLocalStorageContext()
 
   useEffect(() => {
-    window.localStorage.setItem(UBESWAP, JSON.stringify({ ...state, [LAST_SAVED]: Math.floor(Date.now() / 1000) }))
+    window.localStorage.setItem(TRADEGEN, JSON.stringify({ ...state, [LAST_SAVED]: Math.floor(Date.now() / 1000) }))
   })
 
   return null
@@ -148,48 +148,44 @@ export function useSavedAccounts() {
   return [savedAccounts, addAccount, removeAccount]
 }
 
-export function useSavedPairs() {
+export function useSavedPools() {
   const [state, { updateKey }] = useLocalStorageContext()
-  const savedPairs = state?.[SAVED_PAIRS]
+  const savedPools = state?.[SAVED_POOLS]
 
-  function addPair(address, token0Address, token1Address, token0Symbol, token1Symbol) {
-    const newList = state?.[SAVED_PAIRS]
+  function addPool(address, name) {
+    const newList = state?.[SAVED_POOLS]
     newList[address] = {
-      address,
-      token0Address,
-      token1Address,
-      token0Symbol,
-      token1Symbol,
+      name,
     }
-    updateKey(SAVED_PAIRS, newList)
+    updateKey(SAVED_POOLS, newList)
   }
 
-  function removePair(address) {
-    const newList = state?.[SAVED_PAIRS]
+  function removePool(address) {
+    const newList = state?.[SAVED_POOLS]
     newList[address] = null
-    updateKey(SAVED_PAIRS, newList)
+    updateKey(SAVED_POOLS, newList)
   }
 
-  return [savedPairs, addPair, removePair]
+  return [savedPools, addPool, removePool]
 }
 
-export function useSavedTokens() {
+export function useSavedNFTPools() {
   const [state, { updateKey }] = useLocalStorageContext()
-  const savedTokens = state?.[SAVED_TOKENS]
+  const savedNFTPools = state?.[SAVED_NFT_POOLS]
 
-  function addToken(address, symbol) {
-    const newList = state?.[SAVED_TOKENS]
+  function addNFTPool(address, name) {
+    const newList = state?.[SAVED_NFT_POOLS]
     newList[address] = {
-      symbol,
+      name,
     }
-    updateKey(SAVED_TOKENS, newList)
+    updateKey(SAVED_NFT_POOLS, newList)
   }
 
-  function removeToken(address) {
-    const newList = state?.[SAVED_TOKENS]
+  function removeNFTPool(address) {
+    const newList = state?.[SAVED_NFT_POOLS]
     newList[address] = null
-    updateKey(SAVED_TOKENS, newList)
+    updateKey(SAVED_NFT_POOLS, newList)
   }
 
-  return [savedTokens, addToken, removeToken]
+  return [savedNFTPools, addNFTPool, removeNFTPool]
 }

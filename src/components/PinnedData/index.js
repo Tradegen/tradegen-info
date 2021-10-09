@@ -3,7 +3,7 @@ import { Bookmark, ChevronRight, X } from 'react-feather'
 import { withRouter } from 'react-router-dom'
 import styled from 'styled-components'
 
-import { useSavedPairs, useSavedTokens } from '../../contexts/LocalStorage'
+import { useSavedPools, useSavedNFTPools } from '../../contexts/LocalStorage'
 import { TYPE } from '../../Theme'
 import { Hover } from '..'
 import AccountSearch from '../AccountSearch'
@@ -49,8 +49,8 @@ const StyledIcon = styled.div`
 `
 
 function PinnedData({ history, open, setSavedOpen }) {
-  const [savedPairs, , removePair] = useSavedPairs()
-  const [savedTokens, , removeToken] = useSavedTokens()
+  const [savedPools, , removePool] = useSavedPools()
+  const [savedNFTPools, , removeNFTPool] = useSavedNFTPools()
 
   return !open ? (
     <RightColumn open={open} onClick={() => setSavedOpen(true)}>
@@ -76,30 +76,30 @@ function PinnedData({ history, open, setSavedOpen }) {
       <AccountSearch small={true} />
       <AutoColumn gap="40px" style={{ marginTop: '2rem' }}>
         <AutoColumn gap={'12px'}>
-          <TYPE.main>Pinned Pairs</TYPE.main>
-          {Object.keys(savedPairs).filter((key) => {
-            return !!savedPairs[key]
+          <TYPE.main>Pinned Pools</TYPE.main>
+          {Object.keys(savedPools).filter((key) => {
+            return !!savedPools[key]
           }).length > 0 ? (
-            Object.keys(savedPairs)
+            Object.keys(savedPools)
               .filter((address) => {
-                return !!savedPairs[address]
+                return !!savedPools[address]
               })
               .map((address) => {
-                const pair = savedPairs[address]
+                const pool = savedPools[address]
                 return (
-                  <RowBetween key={pair.address}>
-                    <ButtonFaded onClick={() => history.push('/pair/' + address)}>
+                  <RowBetween key={pool.address}>
+                    <ButtonFaded onClick={() => history.push('/pool/' + address)}>
                       <RowFixed>
                         <TYPE.header>
                           <FormattedName
-                            text={pair.token0Symbol + '/' + pair.token1Symbol}
+                            text={pool.name}
                             maxCharacters={12}
                             fontSize={'12px'}
                           />
                         </TYPE.header>
                       </RowFixed>
                     </ButtonFaded>
-                    <Hover onClick={() => removePair(pair.address)}>
+                    <Hover onClick={() => removePair(pool.address)}>
                       <StyledIcon>
                         <X size={16} />
                       </StyledIcon>
@@ -108,31 +108,30 @@ function PinnedData({ history, open, setSavedOpen }) {
                 )
               })
           ) : (
-            <TYPE.light>Pinned pairs will appear here.</TYPE.light>
+            <TYPE.light>Pinned pools will appear here.</TYPE.light>
           )}
         </AutoColumn>
         <ScrollableDiv gap={'12px'}>
-          <TYPE.main>Pinned Tokens</TYPE.main>
-          {Object.keys(savedTokens).filter((key) => {
-            return !!savedTokens[key]
+          <TYPE.main>Pinned NFT pools</TYPE.main>
+          {Object.keys(savedNFTPools).filter((key) => {
+            return !!savedNFTPools[key]
           }).length > 0 ? (
-            Object.keys(savedTokens)
+            Object.keys(savedNFTPools)
               .filter((address) => {
-                return !!savedTokens[address]
+                return !!savedNFTPools[address]
               })
               .map((address) => {
-                const token = savedTokens[address]
+                const NFTPool = savedNFTPools[address]
                 return (
                   <RowBetween key={address}>
-                    <ButtonFaded onClick={() => history.push('/token/' + address)}>
+                    <ButtonFaded onClick={() => history.push('/nftpool/' + address)}>
                       <RowFixed>
-                        <TokenLogo address={address} size={'14px'} />
                         <TYPE.header ml={'6px'}>
-                          <FormattedName text={token.symbol} maxCharacters={12} fontSize={'12px'} />
+                          <FormattedName text={NFTPool.name} maxCharacters={12} fontSize={'12px'} />
                         </TYPE.header>
                       </RowFixed>
                     </ButtonFaded>
-                    <Hover onClick={() => removeToken(address)}>
+                    <Hover onClick={() => removeNFTPool(address)}>
                       <StyledIcon>
                         <X size={16} />
                       </StyledIcon>
@@ -141,7 +140,7 @@ function PinnedData({ history, open, setSavedOpen }) {
                 )
               })
           ) : (
-            <TYPE.light>Pinned tokens will appear here.</TYPE.light>
+            <TYPE.light>Pinned NFT pools will appear here.</TYPE.light>
           )}
         </ScrollableDiv>
       </AutoColumn>

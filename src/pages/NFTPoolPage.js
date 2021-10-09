@@ -23,7 +23,7 @@ import TxnList from '../components/TxnList'
 import { useNFTPoolData, useNFTPoolTransactions } from '../contexts/NFTPoolData'
 import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber, shortenAddress } from '../utils'
-import { useSavedTokens } from '../contexts/LocalStorage'
+import { useSavedNFTPools } from '../contexts/LocalStorage'
 import InvestmentPositionsList from '../components/InvestmentPositionsList'
 
 const DashboardWrapper = styled.div`
@@ -109,10 +109,6 @@ function NFTPoolPage({ address, history }) {
     // all transactions with this NFT pool
     const transactions = useNFTPoolTransactions(address)
 
-    console.log(transactions)
-
-    console.log(oneDayVolumeUSD)
-
     // price
     const price = tokenPrice ? formattedNum(tokenPrice / 1000000000000000000, true) : ''
     const priceChange = priceChangeUSD ? formattedPercent(priceChangeUSD) : ''
@@ -130,7 +126,7 @@ function NFTPoolPage({ address, history }) {
     const below600 = useMedia('(max-width: 600px)')
     const below500 = useMedia('(max-width: 500px)')
 
-    const [savedTokens, addToken] = useSavedTokens()
+    const [savedNFTPools, addNFTPool] = useSavedNFTPools()
 
     useEffect(() => {
         window.scrollTo({
@@ -146,7 +142,7 @@ function NFTPoolPage({ address, history }) {
                 <RowBetween style={{ flexWrap: 'wrap', alingItems: 'start' }}>
                     <AutoRow align="flex-end" style={{ width: 'fit-content' }}>
                         <TYPE.body>
-                            <BasicLink to="/tokens">{'NFT Pools '}</BasicLink>→ {name}
+                            <BasicLink to="/nftpools">{'NFT Pools '}</BasicLink>→ {name}
                         </TYPE.body>
                         <Link
                             style={{ width: 'fit-content' }}
@@ -189,8 +185,8 @@ function NFTPoolPage({ address, history }) {
                             </RowFixed>
                             <span>
                                 <RowFixed ml={below500 ? '0' : '2.5rem'} mt={below500 ? '1rem' : '0'}>
-                                    {!!!savedTokens[address] && !below800 ? (
-                                        <Hover onClick={() => addToken(address, symbol)}>
+                                    {!!!savedNFTPools[address] && !below800 ? (
+                                        <Hover onClick={() => addNFTPool(address, name)}>
                                             <StyledIcon>
                                                 <PlusCircle style={{ marginRight: '0.5rem' }} />
                                             </StyledIcon>

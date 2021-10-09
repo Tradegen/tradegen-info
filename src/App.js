@@ -8,7 +8,6 @@ import GoogleAnalyticsReporter from './components/analytics/GoogleAnalyticsRepor
 import LocalLoader from './components/LocalLoader'
 import PinnedData from './components/PinnedData'
 import SideNav from './components/SideNav'
-import { PAIR_BLACKLIST, TOKEN_BLACKLIST } from './constants'
 import { useLatestBlocks } from './contexts/Application'
 import { useGlobalChartData, useGlobalData } from './contexts/GlobalData'
 import AccountLookup from './pages/AccountLookup'
@@ -16,8 +15,6 @@ import AccountPage from './pages/AccountPage'
 import AllPairsPage from './pages/AllPairsPage'
 import AllTokensPage from './pages/AllTokensPage'
 import GlobalPage from './pages/GlobalPage'
-import PairPage from './pages/PairPage'
-import TokenPage from './pages/TokenPage'
 import PoolPage from './pages/PoolPage'
 import NFTPoolPage from './pages/NFTPoolPage'
 import { isAddress } from './utils'
@@ -127,15 +124,14 @@ function App() {
               <Route
                 exacts
                 strict
-                path="/token/:tokenAddress"
+                path="/pool/:poolAddress"
                 render={({ match }) => {
                   if (
-                    isAddress(match.params.tokenAddress.toLowerCase()) &&
-                    !Object.keys(TOKEN_BLACKLIST).includes(match.params.tokenAddress.toLowerCase())
+                    isAddress(match.params.poolAddress.toLowerCase())
                   ) {
                     return (
                       <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                        <PoolPage address={match.params.tokenAddress.toLowerCase()} />
+                        <PoolPage address={match.params.poolAddress.toLowerCase()} />
                       </LayoutWrapper>
                     )
                   } else {

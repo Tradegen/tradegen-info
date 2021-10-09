@@ -23,7 +23,7 @@ import TxnList from '../components/TxnList'
 import { usePoolData, usePoolTransactions } from '../contexts/PoolData'
 import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber, shortenAddress } from '../utils'
-import { useSavedTokens } from '../contexts/LocalStorage'
+import { useSavedPools } from '../contexts/LocalStorage'
 import InvestmentPositionsList from '../components/InvestmentPositionsList'
 
 const DashboardWrapper = styled.div`
@@ -126,7 +126,7 @@ function PoolPage({ address, history }) {
     const below600 = useMedia('(max-width: 600px)')
     const below500 = useMedia('(max-width: 500px)')
 
-    const [savedTokens, addToken] = useSavedTokens()
+    const [savedPools, addPool] = useSavedPools()
 
     useEffect(() => {
         window.scrollTo({
@@ -142,7 +142,7 @@ function PoolPage({ address, history }) {
                 <RowBetween style={{ flexWrap: 'wrap', alingItems: 'start' }}>
                     <AutoRow align="flex-end" style={{ width: 'fit-content' }}>
                         <TYPE.body>
-                            <BasicLink to="/tokens">{'Pools '}</BasicLink>→ {name}
+                            <BasicLink to="/pools">{'Pools '}</BasicLink>→ {name}
                         </TYPE.body>
                         <Link
                             style={{ width: 'fit-content' }}
@@ -185,8 +185,8 @@ function PoolPage({ address, history }) {
                             </RowFixed>
                             <span>
                                 <RowFixed ml={below500 ? '0' : '2.5rem'} mt={below500 ? '1rem' : '0'}>
-                                    {!!!savedTokens[address] && !below800 ? (
-                                        <Hover onClick={() => addToken(address, symbol)}>
+                                    {!!!savedPools[address] && !below800 ? (
+                                        <Hover onClick={() => addPool(address, name)}>
                                             <StyledIcon>
                                                 <PlusCircle style={{ marginRight: '0.5rem' }} />
                                             </StyledIcon>
