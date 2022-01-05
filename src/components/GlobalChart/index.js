@@ -63,6 +63,8 @@ const GlobalChart = ({ display }) => {
   }, [dailyData, utcStartTime, volumeWindow, weeklyData])
   const below800 = useMedia('(max-width: 800px)')
 
+  console.log(dailyData);
+
   // update the width on a window resize
   const ref = useRef()
   const isClient = typeof window === 'object'

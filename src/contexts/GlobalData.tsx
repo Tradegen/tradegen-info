@@ -560,8 +560,8 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
         // add the day index to the set of days
         dayIndexSet.add((data[i].date / oneDay).toFixed(0))
         dayIndexArray.push(data[i])
-        dayData.dailyVolumeUSD = parseFloat((BigInt(dayData.dailyVolumeUSD.toString()) / BigInt("1000000000000000000")).toString())
-        dayData.totalValueLockedUSD = parseFloat((BigInt(dayData.totalValueLockedUSD.toString()) / BigInt("1000000000000000000")).toString())
+        dayData.dailyVolumeUSD = parseFloat((BigInt(dayData.dailyVolumeUSD.toString().split(".")[0]) / BigInt("1000000000000000000")).toString())
+        dayData.totalValueLockedUSD = parseFloat((BigInt(dayData.totalValueLockedUSD.toString().split(".")[0]) / BigInt("1000000000000000000")).toString())
       })
 
       // fill in empty days ( there will be no day datas if no trades made that day )
@@ -569,6 +569,7 @@ const getChartData = async (oldestDateToFetch, offsetData) => {
       let latestValueLockedUSD = data[0].totalValueLockedUSD
       let latestDayDats = data[0].mostLiquidTokens
       let index = 1
+      console.log(latestValueLockedUSD)
       while (timestamp < utcEndTime.unix() - oneDay) {
         const nextDay = timestamp + oneDay
         const currentDayIndex = (nextDay / oneDay).toFixed(0)
