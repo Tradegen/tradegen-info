@@ -1356,3 +1356,28 @@ export const MANAGED_INVESTMENTS = gql`
     }
   }
 `
+
+export const PRICES_BY_BLOCK_TOKEN = (
+  tokenAddress: string,
+  blocks: readonly { timestamp: number; number: number }[]
+): DocumentNode => {
+  let queryString = 'query pricesByBlockToken {'
+  queryString += blocks.map(
+    (block) => `
+      t${block.timestamp}:token(id:"${tokenAddress}", block: { number: ${block.number} }, subgraphError: allow) { 
+        derivedCUSD
+      }
+    `
+  )
+  queryString += ','
+  queryString += blocks.map(
+    (block) => `
+      b${block.timestamp}: bundle(id:"1", block: { number: ${block.number} }, subgraphError: allow) { 
+        celoPrice
+      }
+    `
+  )
+
+  queryString += '}'
+  return gql(queryString)
+}
