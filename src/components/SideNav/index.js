@@ -121,7 +121,7 @@ function SideNav({ history }) {
                     Overview
                   </Option>
                 </BasicLink>
-                <BasicLink to="/tokens">
+                <BasicLink to="/pools">
                   <Option
                     activeText={
                       (history.location.pathname.split('/')[1] === 'tokens' ||
@@ -133,7 +133,7 @@ function SideNav({ history }) {
                     Pools
                   </Option>
                 </BasicLink>
-                <BasicLink to="/pairs">
+                <BasicLink to="/nftpools">
                   <Option
                     activeText={
                       (history.location.pathname.split('/')[1] === 'pairs' ||

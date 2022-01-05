@@ -12,8 +12,8 @@ import { useLatestBlocks } from './contexts/Application'
 import { useGlobalChartData, useGlobalData } from './contexts/GlobalData'
 import AccountLookup from './pages/AccountLookup'
 import AccountPage from './pages/AccountPage'
-import AllPairsPage from './pages/AllPairsPage'
-import AllTokensPage from './pages/AllTokensPage'
+import AllNFTPoolsPage from './pages/AllNFTPoolsPage'
+import AllPoolsPage from './pages/AllPoolsPage'
 import GlobalPage from './pages/GlobalPage'
 import PoolPage from './pages/PoolPage'
 import NFTPoolPage from './pages/NFTPoolPage'
@@ -180,15 +180,15 @@ function App() {
                 </LayoutWrapper>
               </Route>
 
-              <Route path="/tokens">
+              <Route path="/pools">
                 <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                  <AllTokensPage />
+                  <AllPoolsPage />
                 </LayoutWrapper>
               </Route>
 
-              <Route path="/pairs">
+              <Route path="/nftpools">
                 <LayoutWrapper savedOpen={savedOpen} setSavedOpen={setSavedOpen}>
-                  <AllPairsPage />
+                  <AllNFTPoolsPage />
                 </LayoutWrapper>
               </Route>
 

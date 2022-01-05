@@ -172,6 +172,7 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
 
     const ListItem = ({ item, index }) => {
         let totalReturn;
+        console.log(item.tokenPrice)
         if (!item || !item.tokenPrice) {
             totalReturn = 0;
         }
