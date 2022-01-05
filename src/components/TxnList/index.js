@@ -214,7 +214,7 @@ function TxnList({ transactions, nameOverride, color }) {
           newTxn.type = TXN_TYPE.MINT
           newTxn.investmentType = "Pool"
           newTxn.account = mint.managerAddress
-          newTxn.amountUSD = mint.feesMinted * mint.tokenPrice / BigInt("1000000000000000000")
+          newTxn.amountUSD = BigInt(mint.feesMinted) * BigInt(mint.tokenPrice) / BigInt("1000000000000000000")
           newTxn.name = mint.poolTransaction.pool.name
           return newTxns.push(newTxn)
         })

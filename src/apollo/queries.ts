@@ -987,6 +987,7 @@ export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
       }
       managerAddress
       feesMinted
+      tokenPrice
     }
     depositNFTPools(first: 20, where: { NFTPoolAddress_in: $allNFTPools }, orderBy: timestamp, orderDirection: desc) {
       NFTPoolTransaction {
@@ -1132,6 +1133,7 @@ export const GLOBAL_TXNS_TRADEGEN = gql`
       mintFee {
         managerAddress
         feesMinted
+        tokenPrice
         poolTransaction {
           id
           timestamp
@@ -1289,6 +1291,7 @@ export const USER_TRANSACTIONS_TRADEGEN = gql`
       }
       managerAddress
       feesMinted
+      tokenPrice
     }
     depositNFTPools(first: 20, where: { userAddress: $user }, orderBy: timestamp, orderDirection: desc) {
       NFTPoolTransaction {

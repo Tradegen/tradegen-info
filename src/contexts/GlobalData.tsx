@@ -725,8 +725,6 @@ export function useGlobalData(): Partial<IGlobalDataTradegen> {
   const fetchData = useCallback(async () => {
     const globalDataTradegen = await getGlobalDataTradegen()
 
-    console.log(globalDataTradegen)
-
     if (globalDataTradegen) {
       updateTradegen(globalDataTradegen)
     }
@@ -926,8 +924,6 @@ async function getGlobalDataTradegen(): Promise<IGlobalDataTradegen | null> {
       utcOneWeekBack,
       utcTwoWeeksBack,
     ])
-
-    console.log(oneDayBlock)
 
     // fetch the global data
     const result = await tradegenClient.query<GlobalDataTradegenLatestQuery, GlobalDataTradegenLatestQueryVariables>({
