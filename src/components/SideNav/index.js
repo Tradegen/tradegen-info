@@ -174,7 +174,17 @@ function SideNav({ history }) {
             </HeaderText>
             <HeaderText>
               <Link href="https://github.com/Tradegen" target="_blank">
-                Code
+                Github
+              </Link>
+            </HeaderText>
+            <HeaderText>
+              <Link href="https://discord.com/invite/KMM3kVaZNX" target="_blank">
+                Discord
+              </Link>
+            </HeaderText>
+            <HeaderText>
+              <Link href="https://twitter.com/TradegenFinance" target="_blank">
+                Twitter
               </Link>
             </HeaderText>
           </AutoColumn>
