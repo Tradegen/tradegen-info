@@ -7,7 +7,7 @@ import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
 
 import { TYPE } from '../../Theme'
-import { formattedNum, formattedPercent } from '../../utils'
+import { formattedNum, formattedPercent, toSignificant } from '../../utils'
 import { Divider } from '..'
 import FormattedName from '../FormattedName'
 import { CustomLink } from '../Link'
@@ -183,12 +183,12 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
     }, [tokens, formattedTokens, itemMax])
 
     const ListItem = ({ item, index }) => {
-        let valueUSD = balances[index] ? BigInt(balances[index]) * BigInt(item.priceUSD) / BigInt("100000000000000000") : BigInt(0);
+        console.log(balances[index] / 1e18)
+        let valueUSD = balances[index] ? Number(balances[index] * item.priceUSD / 1e18) : 0;
         return (
             <DashGrid style={{ height: '48px' }} focus={true}>
                 <DataText area="name" fontWeight="500">
                     <Row>
-                        {!below680 && <div style={{ marginRight: '1rem', width: '10px' }}>{index}</div>}
                         <TokenLogo address={item.id} />
                         <CustomLink style={{ marginLeft: '16px', whiteSpace: 'nowrap' }} to={'/token/' + item.id}>
                             <FormattedName
@@ -208,8 +208,8 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                 <DataText area="price" color="text" fontWeight="500">
                     {formattedNum(item.priceUSD, true)}
                 </DataText>
-                <DataText area="liq">{balances[index] ?? 0}</DataText>
-                <DataText area="vol">{formattedNum(valueUSD.toString(), true)}</DataText>
+                <DataText area="liq">{balances[index] ? toSignificant(balances[index] / 1e18, 3) : 0}</DataText>
+                <DataText area="vol">{formattedNum(valueUSD, true)}</DataText>
                 {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}
             </DashGrid>
         )
@@ -301,7 +301,7 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                     filteredList.map((item, index) => {
                         return (item &&
                             <div key={index}>
-                                <ListItem key={index} index={(page - 1) * itemMax + index + 1} item={item} />
+                                <ListItem key={index} index={(page - 1) * itemMax + index} item={item} />
                                 <Divider />
                             </div>
                         )

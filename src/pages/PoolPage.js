@@ -321,7 +321,7 @@ function PoolPage({ address, history }) {
                                         <TYPE.main>Manager</TYPE.main>
                                         <AutoRow align="flex-end">
                                             <TYPE.main style={{ marginTop: '.5rem' }} fontSize={24} fontWeight="500">
-                                                {manager.slice(0, 8) + '...' + manager.slice(36, 42)}
+                                                {manager ? manager.slice(0, 8) + '...' + manager.slice(36, 42) : '-'}
                                             </TYPE.main>
                                             <CopyHelper toCopy={manager} />
                                         </AutoRow>

@@ -32,6 +32,7 @@ interface Props extends Omit<CommonProps, 'size' | 'ref' | 'as'> {
 export default function TokenLogo({ address, size = '24px', ...rest }: Props): JSX.Element {
   const addressChecksum = isAddress(address)
   const tokenInfo = addressChecksum ? ALL_MAINNET_TOKENS_MAP[addressChecksum] : null
+  console.log(tokenInfo)
   const path = tokenInfo?.logoURI
   const [error, setError] = useState(false)
 
