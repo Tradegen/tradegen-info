@@ -336,7 +336,7 @@ function PoolPage({ address, history }) {
                                         </AutoRow>
                                     </Column>
                                     <ButtonLight color={backgroundColor}>
-                                        <Link color={backgroundColor} external href={`https://explorer.celo.org/tokens/${address}`}>
+                                        <Link color={backgroundColor} external href={`https://explorer.celo.org/address/${address}`}>
                                             View on Celo Explorer ↗
                                         </Link>
                                     </ButtonLight>
