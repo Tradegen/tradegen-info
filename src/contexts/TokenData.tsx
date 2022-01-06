@@ -19,7 +19,7 @@ import {
 } from '../apollo/generated/types'
 import {
   FILTERED_TRANSACTIONS,
-  PRICES_BY_BLOCK,
+  PRICES_BY_BLOCK_TOKEN,
   TOKEN_CHART,
   TOKEN_DATA,
   TOKEN_DATA_LATEST,
@@ -583,7 +583,7 @@ const getIntervalTokenData = async (tokenAddress, startTime, interval = 3600, la
       })
     }
 
-    const result = await splitQuery(PRICES_BY_BLOCK, client, [tokenAddress], blocks, 50)
+    const result = await splitQuery(PRICES_BY_BLOCK_TOKEN, client, [tokenAddress], blocks, 50)
 
     // format token ETH price results
     const values = []

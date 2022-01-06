@@ -971,6 +971,7 @@ export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
         timestamp
         pool {
           name
+          tokenPrice
         }
       }
       userAddress
@@ -1007,6 +1008,7 @@ export const FILTERED_TRANSACTIONS_TRADEGEN = gql`
         timestamp
         NFTPool {
           name
+          tokenPrice
         }
       }
       userAddress

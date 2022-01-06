@@ -209,7 +209,7 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                     {formattedNum(item.priceUSD, true)}
                 </DataText>
                 <DataText area="liq">{balances[index] ?? 0}</DataText>
-                <DataText area="vol">{formattedNum(valueUSD, true)}</DataText>
+                <DataText area="vol">{formattedNum(valueUSD.toString(), true)}</DataText>
                 {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}
             </DashGrid>
         )
