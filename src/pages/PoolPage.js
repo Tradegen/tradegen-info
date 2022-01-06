@@ -18,11 +18,11 @@ import Loader from '../components/LocalLoader'
 import Panel from '../components/Panel'
 import { AutoRow, RowBetween, RowFixed } from '../components/Row'
 import Search from '../components/Search'
-import TokenChart from '../components/TokenChart'
+import PoolChart from '../components/PoolChart'
 import TxnList from '../components/TxnList'
 import { usePoolData, usePoolTransactions } from '../contexts/PoolData'
 import { ThemedBackground, TYPE } from '../Theme'
-import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber, shortenAddress } from '../utils'
+import { formattedNum, formattedPercent } from '../utils'
 import { useSavedPools } from '../contexts/LocalStorage'
 import InvestmentPositionsList from '../components/InvestmentPositionsList'
 
@@ -281,7 +281,7 @@ function PoolPage({ address, history }) {
                                         gridRow: below1080 ? '' : '1/4',
                                     }}
                                 >
-                                    <TokenChart address={address} color={backgroundColor} base={tokenPrice / 1000000000000000000} />
+                                    <PoolChart address={address} color={backgroundColor} base={tokenPrice / 1000000000000000000} />
                                 </Panel>
                             </PanelWrapper>
                         </>

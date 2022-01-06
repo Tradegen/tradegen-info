@@ -530,7 +530,7 @@ const getIntervalPoolData = async (poolAddress, startTime, interval = 3600, late
         const values = []
         for (const row in result) {
             const timestamp = row.split('t')[1]
-            const tokenPrice = parseFloat(result[row]?.tokenPrice)
+            const tokenPrice = parseFloat(result[row]?.tokenPrice) / 1e18
             if (timestamp) {
                 values.push({
                     timestamp,
