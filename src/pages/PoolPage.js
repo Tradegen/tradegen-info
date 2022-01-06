@@ -198,7 +198,7 @@ function PoolPage({ address, history }) {
                                     ) : (
                                         <></>
                                     )}
-                                    <Link href={getSwapLink(address)} target="_blank">
+                                    <Link href={"https://app.tradegen.io/#/pool/" + address} target="_blank">
                                         <ButtonDark ml={'.5rem'} mr={below1080 && '.5rem'} color={backgroundColor}>
                                             Trade
                                         </ButtonDark>
