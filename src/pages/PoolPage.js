@@ -168,7 +168,7 @@ function PoolPage({ address, history }) {
                         >
                             <RowFixed style={{ flexWrap: 'wrap' }}>
                                 <RowFixed style={{ alignItems: 'baseline' }}>
-                                    <TYPE.main fontSize={below1080 ? '1.5rem' : '2rem'} fontWeight={500} style={{ margin: '0 1rem' }}>
+                                    <TYPE.main fontSize={below1080 ? '1.5rem' : '2rem'} fontWeight={500} style={{ marginRight: '1rem' }}>
                                         <RowFixed gap="6px">
                                             <FormattedName text={name} />{' '}
                                         </RowFixed>
@@ -346,7 +346,7 @@ function PoolPage({ address, history }) {
                     </DashboardWrapper>
                 </WarningGrouping>
             </ContentWrapper>
-        </PageWrapper>
+        </PageWrapper >
     )
 }
 

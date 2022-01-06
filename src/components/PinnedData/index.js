@@ -99,7 +99,7 @@ function PinnedData({ history, open, setSavedOpen }) {
                         </TYPE.header>
                       </RowFixed>
                     </ButtonFaded>
-                    <Hover onClick={() => removePair(pool.address)}>
+                    <Hover onClick={() => removePool(address)}>
                       <StyledIcon>
                         <X size={16} />
                       </StyledIcon>
