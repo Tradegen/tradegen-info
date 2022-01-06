@@ -104,7 +104,7 @@ export const PRICES_BY_BLOCK_NFT_POOL = (
   let queryString = 'query pricesByBlockNFTPool {'
   queryString += blocks.map(
     (block) => `
-      t${block.timestamp}:NFTPool(id:"${NFTPoolAddress}", block: { number: ${block.number} }) { 
+      t${block.timestamp}:nftpool(id:"${NFTPoolAddress}", block: { number: ${block.number} }) { 
         tokenPrice
       }
     `

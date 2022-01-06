@@ -530,7 +530,7 @@ const getIntervalNFTPoolData = async (NFTPoolAddress, startTime, interval = 3600
         const values = []
         for (const row in result) {
             const timestamp = row.split('t')[1]
-            const tokenPrice = parseFloat(result[row]?.tokenPrice)
+            const tokenPrice = parseFloat(result[row]?.tokenPrice) / 1e18
             if (timestamp) {
                 values.push({
                     timestamp,

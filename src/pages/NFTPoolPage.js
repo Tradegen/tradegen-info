@@ -18,7 +18,7 @@ import Loader from '../components/LocalLoader'
 import Panel from '../components/Panel'
 import { AutoRow, RowBetween, RowFixed } from '../components/Row'
 import Search from '../components/Search'
-import TokenChart from '../components/TokenChart'
+import NFTPoolChart from '../components/NFTPoolChart'
 import TxnList from '../components/TxnList'
 import { useNFTPoolData, useNFTPoolTransactions } from '../contexts/NFTPoolData'
 import { ThemedBackground, TYPE } from '../Theme'
@@ -281,7 +281,7 @@ function NFTPoolPage({ address, history }) {
                                         gridRow: below1080 ? '' : '1/4',
                                     }}
                                 >
-                                    <TokenChart address={address} color={backgroundColor} base={tokenPrice / 1000000000000000000} />
+                                    <NFTPoolChart address={address} color={backgroundColor} base={tokenPrice / 1000000000000000000} />
                                 </Panel>
                             </PanelWrapper>
                         </>
