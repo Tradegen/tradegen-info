@@ -65,3 +65,22 @@ export const BLOCKED_WARNINGS = {
 export const FEE_WARNING_TOKENS = ['0xd46ba6d942050d489dbd938a2c909a5d5039a161']
 
 export const UNTRACKED_COPY = 'Derived USD values may be inaccurate without liquid stablecoin or ETH pairings.'
+
+export const mcUSD = "0x918146359264C492BD6934071c6Bd31C854EDBc3"
+export const WETH = "0xE919F65739c26a42616b7b8eedC6b5524d1e3aC4"
+export const cMCO2 = "0x32A9FE697a32135BFd313a6Ac28792DaE4D9979d"
+export const MOO = "0x17700282592D6917F6A73D0bF8AcCf4D578c131e"
+export const SOL = "0x173234922eB27d5138c5e481be9dF5261fAeD450"
+export const UBE = "0x00Be915B9dCf56a3CBE739D9B9c202ca692409EC"
+export const CELO = "0x471EcE3750Da237f93B8E339c536989b8978a438"
+export const POOF = "0x00400FcbF0816bebB94654259de7273f4A05c762"
+
+export const SUPPORTED_TOKENS = [
+  WETH,
+  cMCO2,
+  MOO,
+  SOL,
+  UBE,
+  CELO,
+  POOF
+]
