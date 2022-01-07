@@ -132,10 +132,6 @@ function PoolPage({ address, history }) {
     const volume = formattedNum(!!oneDayVolumeUSD ? oneDayVolumeUSD : 0, true)
     const volumeChange = formattedPercent(volumeChangeUSD)
 
-    // TVL
-    const totalValueLocked = formattedNum(totalValueLockedUSD / 1000000000000000000, true)
-    const totalValueLockedChange = formattedPercent(totalValueLockedChangeUSD)
-
     const below1080 = useMedia('(max-width: 1080px)')
     const below800 = useMedia('(max-width: 800px)')
     const below600 = useMedia('(max-width: 600px)')
@@ -241,9 +237,9 @@ function PoolPage({ address, history }) {
                                             <RowBetween align="flex-end">
                                                 {' '}
                                                 <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={500}>
-                                                    {price}
+                                                    {formattedNum(Number(currentPrice.toString()) / 1e18, true)}
                                                 </TYPE.main>
-                                                <TYPE.main>{priceChange}</TYPE.main>
+                                                <TYPE.main>{formattedPercent(priceChange)}</TYPE.main>
                                             </RowBetween>
                                         </AutoColumn>
                                     </Panel>

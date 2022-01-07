@@ -22,9 +22,10 @@ import NFTPoolChart from '../components/NFTPoolChart'
 import TxnList from '../components/TxnList'
 import { useNFTPoolData, useNFTPoolTransactions } from '../contexts/NFTPoolData'
 import { ThemedBackground, TYPE } from '../Theme'
-import { formattedNum, formattedPercent, getPoolLink, getSwapLink, localNumber, shortenAddress } from '../utils'
+import { formattedNum, formattedPercent, calculateTVL, calculatePreviousDayTVL } from '../utils'
 import { useSavedNFTPools } from '../contexts/LocalStorage'
 import InvestmentPositionsList from '../components/InvestmentPositionsList'
+import { useAllTokenData } from '../contexts/TokenData'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -90,18 +91,33 @@ function NFTPoolPage({ address, history }) {
         manager,
         maxSupply,
         tokenPrice,
+        totalSupply,
         positionAddresses,
         positionBalances,
         oneDayVolumeUSD,
         totalValueLockedUSD,
         volumeChangeUSD,
         priceChangeUSD,
-        totalValueLockedChangeUSD
+        totalValueLockedChangeUSD,
+        oneDayData
     } = useNFTPoolData(address)
 
     useEffect(() => {
         document.querySelector('body').scrollTo(0, 0)
     }, [])
+
+    const allTokens = useAllTokenData();
+    let currentTVL = calculateTVL(allTokens, positionAddresses, positionBalances)
+    let previousTVL = calculatePreviousDayTVL(allTokens, oneDayData.positionAddresses, oneDayData.positionBalances)
+    let currentPrice = BigInt(currentTVL) * BigInt(1e18) / BigInt(totalSupply);
+    let previousPrice = BigInt(previousTVL) * BigInt(1e18) / BigInt(oneDayData.totalSupply)
+    console.log(currentPrice)
+
+    let priceChange = 100 * (Number(currentPrice.toString()) - Number(previousPrice.toString())) / Number(previousPrice.toString())
+    console.log(priceChange)
+
+    let TVLChange = 100 * (Number(currentTVL.toString()) - Number(previousTVL.toString())) / Number(previousTVL.toString())
+    console.log(TVLChange)
 
     // detect color from token
     const backgroundColor = '#5271FF'
@@ -109,17 +125,9 @@ function NFTPoolPage({ address, history }) {
     // all transactions with this NFT pool
     const transactions = useNFTPoolTransactions(address)
 
-    // price
-    const price = tokenPrice ? formattedNum(tokenPrice / 1000000000000000000, true) : ''
-    const priceChange = priceChangeUSD ? formattedPercent(priceChangeUSD) : ''
-
     // volume
     const volume = formattedNum(!!oneDayVolumeUSD ? oneDayVolumeUSD : 0, true)
     const volumeChange = formattedPercent(volumeChangeUSD)
-
-    // TVL
-    const totalValueLocked = formattedNum(totalValueLockedUSD / 1000000000000000000, true)
-    const totalValueLockedChange = formattedPercent(totalValueLockedChangeUSD)
 
     const below1080 = useMedia('(max-width: 1080px)')
     const below800 = useMedia('(max-width: 800px)')
@@ -176,9 +184,9 @@ function NFTPoolPage({ address, history }) {
                                     {!below1080 && (
                                         <>
                                             <TYPE.main fontSize={'1.5rem'} fontWeight={500} style={{ marginRight: '1rem' }}>
-                                                {price}
+                                                {formattedNum(Number(currentPrice.toString()) / 1e36, true)}
                                             </TYPE.main>
-                                            {priceChange}
+                                            {formattedPercent(priceChange)}
                                         </>
                                     )}
                                 </RowFixed>
@@ -198,7 +206,7 @@ function NFTPoolPage({ address, history }) {
                                     ) : (
                                         <></>
                                     )}
-                                    <Link href={getSwapLink(address)} target="_blank">
+                                    <Link href={"https://app.tradegen.io/#/nftpool/" + address} target="_blank">
                                         <ButtonDark ml={'.5rem'} mr={below1080 && '.5rem'} color={backgroundColor}>
                                             Trade
                                         </ButtonDark>
@@ -226,9 +234,9 @@ function NFTPoolPage({ address, history }) {
                                             <RowBetween align="flex-end">
                                                 {' '}
                                                 <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={500}>
-                                                    {price}
+                                                    {formattedNum(Number(currentPrice.toString()) / 1e36, true)}
                                                 </TYPE.main>
-                                                <TYPE.main>{priceChange}</TYPE.main>
+                                                <TYPE.main>{formattedPercent(priceChange)}</TYPE.main>
                                             </RowBetween>
                                         </AutoColumn>
                                     </Panel>
@@ -241,9 +249,9 @@ function NFTPoolPage({ address, history }) {
                                         </RowBetween>
                                         <RowBetween align="flex-end">
                                             <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={500}>
-                                                {totalValueLocked}
+                                                {formattedNum(Number(currentTVL.toString()) / 1e18, true)}
                                             </TYPE.main>
-                                            <TYPE.main>{totalValueLockedChange}</TYPE.main>
+                                            <TYPE.main>{formattedPercent(TVLChange)}</TYPE.main>
                                         </RowBetween>
                                     </AutoColumn>
                                 </Panel>
@@ -281,7 +289,7 @@ function NFTPoolPage({ address, history }) {
                                         gridRow: below1080 ? '' : '1/4',
                                     }}
                                 >
-                                    <NFTPoolChart address={address} color={backgroundColor} base={tokenPrice / 1000000000000000000} />
+                                    <NFTPoolChart address={address} color={backgroundColor} base={Number(currentPrice.toString()) / 1e36} />
                                 </Panel>
                             </PanelWrapper>
                         </>
@@ -336,7 +344,7 @@ function NFTPoolPage({ address, history }) {
                                         </AutoRow>
                                     </Column>
                                     <ButtonLight color={backgroundColor}>
-                                        <Link color={backgroundColor} external href={`https://explorer.celo.org/tokens/${address}`}>
+                                        <Link color={backgroundColor} external href={`https://explorer.celo.org/address/${address}`}>
                                             View on Celo Explorer ↗
                                         </Link>
                                     </ButtonLight>
