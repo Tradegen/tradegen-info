@@ -5,7 +5,7 @@ import { useMedia, usePrevious } from 'react-use'
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import styled from 'styled-components'
 
-import { timeframeOptions } from '../../constants'
+import { timeframeOptions, SUPPORTED_TOKENS } from '../../constants'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
 import { usePoolChartData, usePoolPriceData } from '../../contexts/PoolData'
 import { formattedNum, getTimeframe, toK, toNiceDate, toNiceDateYear } from '../../utils'
@@ -15,6 +15,7 @@ import { AutoColumn } from '../Column'
 import DropdownSelect from '../DropdownSelect'
 import LocalLoader from '../LocalLoader'
 import { AutoRow, RowBetween, RowFixed } from '../Row'
+import { useAllTokenData, useTokenPriceDataCombined, useTokenPriceData } from '../../contexts/TokenData'
 
 const ChartWrapper = styled.div`
   height: 100%;
@@ -58,7 +59,13 @@ const PoolChart = ({ address, color, base }) => {
         }
     }, [address, addressPrev])
 
-    let chartData = usePoolChartData(address)
+    console.log(SUPPORTED_TOKENS)
+
+    const allTokens = useAllTokenData();
+    const tokenDatas = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.WEEK, 3600);
+    console.log(tokenDatas)
+
+    let chartData = usePoolChartData(address, allTokens)
 
     const [timeWindow, setTimeWindow] = useState(timeframeOptions.WEEK)
     const prevWindow = usePrevious(timeWindow)

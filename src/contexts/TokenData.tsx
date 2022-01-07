@@ -554,6 +554,10 @@ const getIntervalTokenData = async (tokenAddress, startTime, interval = 3600, la
   const utcEndTime = dayjs.utc()
   let time = startTime
 
+  console.log("!!!")
+  console.log(tokenAddress)
+  console.log("***")
+
   // create an array of hour start times until we reach current hour
   // buffer by half hour to catch case where graph isnt synced to latest block
   const timestamps = []
@@ -584,6 +588,7 @@ const getIntervalTokenData = async (tokenAddress, startTime, interval = 3600, la
     }
 
     const result = await splitQuery(PRICES_BY_BLOCK_TOKEN, client, [tokenAddress], blocks, 50)
+    console.log(tokenAddress)
 
     // format token ETH price results
     const values = []
@@ -940,4 +945,70 @@ export function useSelectedTokenData(tokenAddresses) {
   }, [])
 
   return data;
+}
+
+/**
+ * gets candlestick data for a list of tokens - saves in context based on the window and the
+ * interval size
+ * @param {*} tokenAddresses
+ * @param {*} timeWindow // a preset time window from constant - how far back to look
+ * @param {*} interval  // the chunk size in seconds - default is 1 hour of 3600s
+ */
+export function useTokenPriceDataCombined(tokenAddresses, timeWindow, interval = 3600) {
+  const [state, { updatePriceData }] = useTokenDataContext()
+  const [latestBlock] = useLatestBlocks()
+
+  const datas = useMemo(() => {
+    return (
+      tokenAddresses &&
+      tokenAddresses.reduce(function (acc, address) {
+        acc[address] = state?.[address]?.[timeWindow]?.[interval]
+        return acc
+      }, {})
+    )
+  }, [state, tokenAddresses])
+
+  let temp = Object.values(datas).filter((val) => !val).length;
+
+  const isMissingData = useMemo(() => temp == tokenAddresses.length, [datas])
+
+  useEffect(() => {
+    const currentTime = dayjs.utc()
+    const windowSize = timeWindow === timeframeOptions.MONTH ? 'month' : 'week'
+    const startTime =
+      timeWindow === timeframeOptions.ALL_TIME ? 1589760000 : currentTime.subtract(1, windowSize).startOf('hour').unix()
+
+    async function fetch() {/*
+      Promise.all(
+        tokenAddresses.map(async (address) => {
+          console.log(address)
+          return await getIntervalTokenData(address.toLowerCase(), startTime, interval, latestBlock)
+        })
+      ).then((res) => {
+        res &&
+          res.map((result, i) => {
+            const tokenAddress = tokenAddresses[i]
+            console.log(result)
+            updatePriceData(tokenAddress, result)
+            return true
+          })
+      })
+        .catch(() => {
+          console.log('error fetching combined data')
+        })*/
+      for (let i = 0; i < tokenAddresses.length; i++) {
+        const data = await getIntervalTokenData(tokenAddresses[i].toLowerCase(), startTime, interval, latestBlock)
+        updatePriceData(tokenAddresses[i], data, timeWindow, interval)
+      }/*
+      const data = await getIntervalTokenData(tokenAddresses[0].toLowerCase(), startTime, interval, latestBlock)
+      updatePriceData(tokenAddresses[0], data, timeWindow, interval)
+      const data2 = await getIntervalTokenData(tokenAddresses[1].toLowerCase(), startTime, interval, latestBlock)
+      updatePriceData(tokenAddresses[1], data2, timeWindow, interval)*/
+    }
+    if (!datas[tokenAddresses[0]]) {
+      fetch()
+    }
+  }, [datas, interval, timeWindow, tokenAddresses, updatePriceData, latestBlock])
+
+  return datas
 }

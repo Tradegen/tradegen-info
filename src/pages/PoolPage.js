@@ -26,6 +26,7 @@ import { formattedNum, formattedPercent, calculateTVL, calculatePreviousDayTVL }
 import { useSavedPools } from '../contexts/LocalStorage'
 import InvestmentPositionsList from '../components/InvestmentPositionsList'
 import { useAllTokenData } from '../contexts/TokenData'
+import TokenChart from '../components/TokenChart'
 
 const DashboardWrapper = styled.div`
   width: 100%;
@@ -118,6 +119,8 @@ function PoolPage({ address, history }) {
     let TVLChange = 100 * (Number(currentTVL.toString()) - Number(previousTVL.toString())) / Number(previousTVL.toString())
     console.log(TVLChange)
 
+    console.log(allTokens)
+
     useEffect(() => {
         document.querySelector('body').scrollTo(0, 0)
     }, [])
@@ -138,6 +141,8 @@ function PoolPage({ address, history }) {
     const below500 = useMedia('(max-width: 500px)')
 
     const [savedPools, addPool] = useSavedPools()
+
+    let temp = "0x00Be915B9dCf56a3CBE739D9B9c202ca692409EC";
 
     useEffect(() => {
         window.scrollTo({
@@ -227,7 +232,7 @@ function PoolPage({ address, history }) {
                                 </RowFixed>
                             )}
                             <PanelWrapper style={{ marginTop: below1080 ? '0' : '1rem' }}>
-                                {below1080 && price && (
+                                {below1080 && currentPrice && (
                                     <Panel>
                                         <AutoColumn gap="20px">
                                             <RowBetween>

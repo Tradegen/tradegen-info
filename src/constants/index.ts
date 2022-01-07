@@ -76,6 +76,7 @@ export const CELO = "0x471EcE3750Da237f93B8E339c536989b8978a438"
 export const POOF = "0x00400FcbF0816bebB94654259de7273f4A05c762"
 
 export const SUPPORTED_TOKENS = [
+  mcUSD,
   WETH,
   cMCO2,
   MOO,

@@ -60,6 +60,8 @@ const TokenChart = ({ address, color, base }) => {
 
   let chartData = useTokenChartData(address)
 
+  console.log(chartData)
+
   const [timeWindow, setTimeWindow] = useState(timeframeOptions.WEEK)
   const prevWindow = usePrevious(timeWindow)
 
@@ -71,21 +73,23 @@ const TokenChart = ({ address, color, base }) => {
   const dailyMonth = useTokenPriceData(address, timeframeOptions.MONTH, 86400)
   const dailyAll = useTokenPriceData(address, timeframeOptions.ALL_TIME, 86400)
 
+  console.log(hourlyAll)
+
   const priceData =
     timeWindow === timeframeOptions.MONTH
       ? // monthly selected
-        frequency === DATA_FREQUENCY.DAY
+      frequency === DATA_FREQUENCY.DAY
         ? dailyMonth
         : hourlyMonth
       : // weekly selected
       timeWindow === timeframeOptions.WEEK
-      ? frequency === DATA_FREQUENCY.DAY
-        ? dailyWeek
-        : hourlyWeek
-      : // all time selected
-      frequency === DATA_FREQUENCY.DAY
-      ? dailyAll
-      : hourlyAll
+        ? frequency === DATA_FREQUENCY.DAY
+          ? dailyWeek
+          : hourlyWeek
+        : // all time selected
+        frequency === DATA_FREQUENCY.DAY
+          ? dailyAll
+          : hourlyAll
 
   // switch to hourly data when switched to week window
   useEffect(() => {
@@ -139,8 +143,8 @@ const TokenChart = ({ address, color, base }) => {
         <RowBetween
           mb={
             chartFilter === CHART_VIEW.LIQUIDITY ||
-            chartFilter === CHART_VIEW.VOLUME ||
-            (chartFilter === CHART_VIEW.PRICE && frequency === DATA_FREQUENCY.LINE)
+              chartFilter === CHART_VIEW.VOLUME ||
+              (chartFilter === CHART_VIEW.PRICE && frequency === DATA_FREQUENCY.LINE)
               ? 40
               : 0
           }

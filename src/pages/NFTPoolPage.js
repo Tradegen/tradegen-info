@@ -224,7 +224,7 @@ function NFTPoolPage({ address, history }) {
                                 </RowFixed>
                             )}
                             <PanelWrapper style={{ marginTop: below1080 ? '0' : '1rem' }}>
-                                {below1080 && price && (
+                                {below1080 && currentPrice && (
                                     <Panel>
                                         <AutoColumn gap="20px">
                                             <RowBetween>

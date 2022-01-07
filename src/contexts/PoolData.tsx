@@ -566,12 +566,14 @@ interface ChartDatum {
     totalValueLockedUSD: string
 }
 
-const getPoolChartData = async (poolAddress: string): Promise<readonly ChartDatum[]> => {
+const getPoolChartData = async (poolAddress: string, allTokens: object): Promise<readonly ChartDatum[]> => {
     let fetchedData: PoolDayDatasQuery['poolDayDatas'] = []
     let resultData: ChartDatum[] = []
     const utcEndTime = dayjs.utc()
     const utcStartTime = utcEndTime.subtract(1, 'year')
     const startTime = utcStartTime.startOf('minute').unix() - 1
+
+    console.log(allTokens)
 
     try {
         let allFound = false
@@ -714,7 +716,7 @@ export function usePoolDataCombined(poolAddresses: readonly string[]) {
     return volume
 }
 
-export function usePoolChartDataCombined(poolAddresses) {
+export function usePoolChartDataCombined(poolAddresses, allTokens) {
     const [state, { updateChartData }] = useTokenDataContext()
 
     const datas = useMemo(() => {
@@ -747,7 +749,7 @@ export function usePoolChartDataCombined(poolAddresses) {
         async function fetchDatas() {
             Promise.all(
                 poolAddresses.map(async (address) => {
-                    return await getPoolChartData(address)
+                    return await getPoolChartData(address, allTokens)
                 })
             )
                 .then((res) => {
@@ -770,18 +772,18 @@ export function usePoolChartDataCombined(poolAddresses) {
     return formattedByDate
 }
 
-export function usePoolChartData(poolAddress) {
+export function usePoolChartData(poolAddress, allTokens) {
     const [state, { updateChartData }] = useTokenDataContext()
     const chartData = state?.[poolAddress]?.chartData
     useEffect(() => {
         async function checkForChartData() {
             if (!chartData) {
-                const data = await getPoolChartData(poolAddress)
+                const data = await getPoolChartData(poolAddress, allTokens)
                 updateChartData(poolAddress, data)
             }
         }
         checkForChartData()
-    }, [chartData, poolAddress, updateChartData])
+    }, [chartData, poolAddress, updateChartData, allTokens])
     return chartData
 }
 
