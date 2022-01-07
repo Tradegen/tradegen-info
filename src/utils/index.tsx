@@ -510,5 +510,21 @@ export function calculateTVL(allTokens, positions, balances): number {
     }
   }
 
-  return TVL / 1e18;
+  return TVL;
+}
+
+export function calculatePreviousDayTVL(allTokens, positions, balances): number {
+  let TVL = 0.0;
+
+  if (!allTokens || !positions.length || !balances.length || positions.length != balances.length) {
+    return 0;
+  }
+
+  for (let i = 0; i < positions.length; i++) {
+    if (allTokens[positions[i]]) {
+      TVL = TVL + (parseFloat(allTokens[positions[i]].oneDayData.derivedCUSD) * balances[i])
+    }
+  }
+
+  return TVL;
 }

@@ -8,7 +8,7 @@ import styled from 'styled-components'
 import { useAllTokenData } from '../../contexts/TokenData'
 
 import { TYPE } from '../../Theme'
-import { formattedNum, formattedPercent, calculateTVL } from '../../utils'
+import { formattedNum, formattedPercent, calculateTVL, calculatePreviousDayTVL } from '../../utils'
 import { Divider } from '..'
 import FormattedName from '../FormattedName'
 import { CustomLink } from '../Link'
@@ -178,19 +178,21 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
 
     const ListItem = ({ item, index }) => {
         let currentTVL = calculateTVL(allTokens, item.positionAddresses, item.positionBalances)
-        console.log(currentTVL)
+        let previousTVL = calculatePreviousDayTVL(allTokens, item.oneDayData.positionAddresses, item.oneDayData.positionBalances)
+        console.log(item)
+        let currentPrice = BigInt(currentTVL) * BigInt(1e18) / BigInt(item.totalSupply);
+        let previousPrice = BigInt(previousTVL) * BigInt(1e18) / BigInt(item.oneDayData.totalSupply)
+        console.log(currentPrice)
+
+        let priceChange = 100 * (Number(currentPrice.toString()) - Number(previousPrice.toString())) / Number(previousPrice.toString())
+        console.log(priceChange)
+
         let totalReturn;
-        console.log(item.tokenPrice)
         if (!item || !item.tokenPrice) {
             totalReturn = 0;
         }
         else {
-            if (BigInt(item.tokenPrice.toString()) >= BigInt("1000000000000000000")) {
-                totalReturn = parseFloat(((BigInt(item.tokenPrice.toString()) - BigInt("1000000000000000000")) / BigInt("10000000000000000")).toString())
-            }
-            else {
-                totalReturn = parseFloat(((BigInt("1000000000000000000") - BigInt(item.tokenPrice.toString())) / BigInt("10000000000000000")).toString())
-            }
+            totalReturn = 100 * (Number(currentPrice) - 1e18) / 1e18
         }
 
         return (
@@ -208,14 +210,14 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
                         </CustomLink>
                     </Row>
                 </DataText>
-                <DataText area="tvl">{formattedNum(parseFloat((BigInt(item.totalValueLockedUSD.toString()) / BigInt("10000000000000000")).toString()) / 100, true)}</DataText>
+                <DataText area="tvl">{formattedNum(currentTVL / 1e18, true)}</DataText>
                 <DataText area="fee">{item.performanceFee / 100}%</DataText>
                 {!below1080 && (
                     <DataText area="price" color="text" fontWeight="500">
-                        {formattedNum(parseFloat((BigInt(item.tokenPrice.toString()) / BigInt("1000000000000000")).toString()) / 1000, true)}
+                        {formattedNum(Number(currentPrice.toString()) / 1e18, true)}
                     </DataText>
                 )}
-                {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}
+                {!below1080 && <DataText area="change">{formattedPercent(priceChange)}</DataText>}
                 {!below1080 && <DataText area="roi">{formattedPercent(totalReturn)}</DataText>}
             </DashGrid>
         )
