@@ -1383,3 +1383,31 @@ export const PRICES_BY_BLOCK_TOKEN = (
   queryString += '}'
   return gql(queryString)
 }
+
+export const PRICES_BY_BLOCK_MULTIPLE_TOKENS = (
+  tokenAddresses: string[],
+  blocks: readonly { timestamp: number; number: number }[]
+): DocumentNode => {
+  let queryString = 'query pricesByBlockToken {'
+  for (let i = 0; i < tokenAddresses.length; i++) {
+    queryString += blocks.map(
+      (block) =>
+        `
+        t${block.timestamp}t${tokenAddresses[i]}:token(id:"${tokenAddresses[i]}", block: { number: ${block.number} }, subgraphError: allow) { 
+          derivedCUSD
+        }
+      `
+    )
+  }
+  queryString += ','
+  queryString += blocks.map(
+    (block) => `
+      b${block.timestamp}: bundle(id:"1", block: { number: ${block.number} }, subgraphError: allow) { 
+        celoPrice
+      }
+    `
+  )
+
+  queryString += '}'
+  return gql(queryString)
+}

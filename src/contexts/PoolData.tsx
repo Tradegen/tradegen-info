@@ -794,10 +794,12 @@ export function usePoolChartData(poolAddress, allTokens) {
  * @param {*} timeWindow // a preset time window from constant - how far back to look
  * @param {*} interval  // the chunk size in seconds - default is 1 hour of 3600s
  */
-export function usePoolPriceData(poolAddress, timeWindow, interval = 3600) {
+export function usePoolPriceData(poolAddress, timeWindow, interval = 3600, tokenData) {
     const [state, { updatePriceData }] = useTokenDataContext()
     const chartData = state?.[poolAddress]?.[timeWindow]?.[interval]
     const [latestBlock] = useLatestBlocks()
+
+    //console.log(tokenData)
 
     useEffect(() => {
         const currentTime = dayjs.utc()

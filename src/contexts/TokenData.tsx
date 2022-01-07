@@ -20,13 +20,14 @@ import {
 import {
   FILTERED_TRANSACTIONS,
   PRICES_BY_BLOCK_TOKEN,
+  PRICES_BY_BLOCK_MULTIPLE_TOKENS,
   TOKEN_CHART,
   TOKEN_DATA,
   TOKEN_DATA_LATEST,
   TOKENS_CURRENT,
   TOKENS_DYNAMIC,
 } from '../apollo/queries'
-import { timeframeOptions } from '../constants'
+import { timeframeOptions, SUPPORTED_TOKENS } from '../constants'
 import {
   get2DayPercentChange,
   getBlockFromTimestamp,
@@ -587,8 +588,15 @@ const getIntervalTokenData = async (tokenAddress, startTime, interval = 3600, la
       })
     }
 
+    let temp = SUPPORTED_TOKENS.map((tokenAddress) => tokenAddress.toLowerCase());
+    console.log(temp);
+
     const result = await splitQuery(PRICES_BY_BLOCK_TOKEN, client, [tokenAddress], blocks, 50)
     console.log(tokenAddress)
+    console.log(result)
+
+    const result2 = await splitQuery(PRICES_BY_BLOCK_MULTIPLE_TOKENS, client, [temp], blocks, 50)
+    console.log(result2)
 
     // format token ETH price results
     const values = []
@@ -703,6 +711,103 @@ const getTokenChartData = async (tokenAddress: string): Promise<readonly TokenCh
     console.log(e)
   }
   return resultData
+}
+
+const getIntervalTokenDataMultipleTokens = async (tokenAddresses, startTime, interval = 3600, latestBlock) => {
+  const utcEndTime = dayjs.utc()
+  let time = startTime
+
+  // create an array of hour start times until we reach current hour
+  // buffer by half hour to catch case where graph isnt synced to latest block
+  const timestamps = []
+  while (time < utcEndTime.unix()) {
+    timestamps.push(time)
+    time += interval
+  }
+
+  // backout if invalid timestamp format
+  if (timestamps.length === 0) {
+    return []
+  }
+
+  // once you have all the timestamps, get the blocks for each timestamp in a bulk query
+  let blocks
+  try {
+    blocks = await getBlocksFromTimestamps(timestamps, 100)
+
+    // catch failing case
+    if (!blocks || blocks.length === 0) {
+      return []
+    }
+
+    if (latestBlock) {
+      blocks = blocks.filter((b) => {
+        return parseFloat(b.number) <= parseFloat(latestBlock)
+      })
+    }
+
+    let temp = tokenAddresses.map((tokenAddress) => tokenAddress.toLowerCase());
+    console.log(temp);
+
+    const result = await splitQuery(PRICES_BY_BLOCK_MULTIPLE_TOKENS, client, [temp], blocks, 50)
+    console.log(result)
+
+    // format token ETH price results
+    let values = {}
+    for (let i = 0; i < temp.length; i++) {
+      values[temp[i]] = [];
+    }
+    for (const row in result) {
+      const timestamp = row.split('t')[1]
+      const token = row.split('t')[2]
+      console.log(token)
+      const derivedCUSD = parseFloat(result[row]?.derivedCUSD)
+      if (timestamp && token) {
+        values[token].push({
+          timestamp,
+          derivedCUSD,
+        })
+      }
+    }
+
+    // go through eth usd prices and assign to original values array
+    let index = 0
+    for (const brow in result) {
+      const timestamp = brow.split('b')[1]
+      if (timestamp) {
+        for (let i = 0; i < temp.length; i++) {
+          if (values[temp[i]][index]) {
+            values[temp[i]][index].priceUSD = values[temp[i]][index].derivedCUSD
+          }
+        }
+        index += 1
+      }
+    }
+
+    let formattedHistory = {}
+    for (let i = 0; i < temp.length; i++) {
+      formattedHistory[temp[i]] = [];
+    }
+
+    // for each hour, construct the open and close price
+    for (let i = 0; i < temp.length; i++) {
+      for (let j = 0; j < values[temp[i]].length - 1; j++) {
+        formattedHistory[temp[i]].push({
+          timestamp: values[temp[i]][j].timestamp,
+          open: parseFloat(values[temp[i]][j].priceUSD),
+          close: parseFloat(values[temp[i]][j + 1].priceUSD),
+        })
+      }
+    }
+
+    console.log(formattedHistory)
+
+    return formattedHistory
+  } catch (e) {
+    console.log(e)
+    console.log('error fetching blocks')
+    return []
+  }
 }
 
 export function Updater() {
@@ -996,14 +1101,15 @@ export function useTokenPriceDataCombined(tokenAddresses, timeWindow, interval =
         .catch(() => {
           console.log('error fetching combined data')
         })*/
+
       for (let i = 0; i < tokenAddresses.length; i++) {
         const data = await getIntervalTokenData(tokenAddresses[i].toLowerCase(), startTime, interval, latestBlock)
         updatePriceData(tokenAddresses[i], data, timeWindow, interval)
-      }/*
-      const data = await getIntervalTokenData(tokenAddresses[0].toLowerCase(), startTime, interval, latestBlock)
-      updatePriceData(tokenAddresses[0], data, timeWindow, interval)
-      const data2 = await getIntervalTokenData(tokenAddresses[1].toLowerCase(), startTime, interval, latestBlock)
-      updatePriceData(tokenAddresses[1], data2, timeWindow, interval)*/
+      }
+
+      //test
+      let test = await getIntervalTokenDataMultipleTokens(tokenAddresses, startTime, interval, latestBlock);
+      console.log(test)
     }
     if (!datas[tokenAddresses[0]]) {
       fetch()
