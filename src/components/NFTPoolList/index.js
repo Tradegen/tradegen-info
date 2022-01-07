@@ -5,9 +5,10 @@ import { withRouter } from 'react-router-dom'
 import { useMedia } from 'react-use'
 import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
+import { useAllTokenData } from '../../contexts/TokenData'
 
 import { TYPE } from '../../Theme'
-import { formattedNum, formattedPercent } from '../../utils'
+import { formattedNum, formattedPercent, calculateTVL, calculatePreviousDayTVL } from '../../utils'
 import { Divider } from '..'
 import FormattedName from '../FormattedName'
 import { CustomLink } from '../Link'
@@ -122,6 +123,8 @@ function TopNFTPoolList({ NFTPools, itemMax = 10, useTracked = false }) {
     const [page, setPage] = useState(1)
     const [maxPage, setMaxPage] = useState(1)
 
+    const allTokens = useAllTokenData();
+
     // sorting
     const [sortDirection, setSortDirection] = useState(true)
     const [sortedColumn, setSortedColumn] = useState(SORT_FIELD.TVL)
@@ -171,17 +174,22 @@ function TopNFTPoolList({ NFTPools, itemMax = 10, useTracked = false }) {
     }, [NFTPools, formattedNFTPools, itemMax])
 
     const ListItem = ({ item, index }) => {
+        let currentTVL = calculateTVL(allTokens, item.positionAddresses, item.positionBalances)
+        let previousTVL = calculatePreviousDayTVL(allTokens, item.oneDayData.positionAddresses, item.oneDayData.positionBalances)
+        console.log(item)
+        let currentPrice = BigInt(currentTVL) / BigInt(item.totalSupply);
+        let previousPrice = BigInt(previousTVL) / BigInt(item.oneDayData.totalSupply)
+        console.log(currentPrice)
+
+        let priceChange = 100 * (Number(currentPrice.toString()) - Number(previousPrice.toString())) / Number(previousPrice.toString())
+        console.log(priceChange)
+
         let totalReturn;
         if (!item || !item.tokenPrice) {
             totalReturn = 0;
         }
         else {
-            if (BigInt(item.tokenPrice.toString()) >= BigInt(item.seedPrice.toString())) {
-                totalReturn = parseFloat(((BigInt(item.tokenPrice.toString()) - BigInt(item.seedPrice.toString())) / BigInt(item.seedPrice.toString())).toString())
-            }
-            else {
-                totalReturn = parseFloat(((BigInt(item.seedPrice.toString()) - BigInt(item.tokenPrice.toString())) / BigInt(item.seedPrice.toString())).toString())
-            }
+            totalReturn = 100 * (Number(currentPrice) - 1e18) / 1e18
         }
 
         return (
@@ -199,14 +207,14 @@ function TopNFTPoolList({ NFTPools, itemMax = 10, useTracked = false }) {
                         </CustomLink>
                     </Row>
                 </DataText>
-                <DataText area="tvl">{formattedNum(parseFloat((BigInt(item.totalValueLockedUSD.toString()) / BigInt("1000000000000000000")).toString()), true)}</DataText>
+                <DataText area="tvl">{formattedNum(currentTVL / 1e18, true)}</DataText>
                 <DataText area="cap">{item.maxSupply.toString()} tokens</DataText>
                 {!below1080 && (
                     <DataText area="price" color="text" fontWeight="500">
-                        {formattedNum(parseFloat((BigInt(item.tokenPrice.toString()) / BigInt("10000000000000000")).toString()) / 100, true)}
+                        {formattedNum(Number(currentPrice.toString()) / 1e18, true)}
                     </DataText>
                 )}
-                {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}
+                {!below1080 && <DataText area="change">{formattedPercent(priceChange)}</DataText>}
                 {!below1080 && <DataText area="roi">{formattedPercent(totalReturn)}</DataText>}
             </DashGrid>
         )
