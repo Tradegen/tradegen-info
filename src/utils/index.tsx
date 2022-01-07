@@ -51,8 +51,7 @@ export function getPoolLink(token0Address, token1Address = null, remove = false)
     return (
       `https://app.ubeswap.org/#/` +
       (remove ? `remove` : `add`) +
-      `/${token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address}/${
-        token1Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token1Address
+      `/${token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address}/${token1Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token1Address
       }`
     )
   }
@@ -62,9 +61,8 @@ export function getSwapLink(token0Address, token1Address = null) {
   if (!token1Address) {
     return `https://app.ubeswap.org/#/swap?inputCurrency=${token0Address}`
   } else {
-    return `https://app.ubeswap.org/#/swap?inputCurrency=${
-      token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address
-    }&outputCurrency=${token1Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token1Address}`
+    return `https://app.ubeswap.org/#/swap?inputCurrency=${token0Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token0Address
+      }&outputCurrency=${token1Address === '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ? 'ETH' : token1Address}`
   }
 }
 
@@ -497,4 +495,20 @@ export function isEquivalent(a, b): boolean {
     }
   }
   return true
+}
+
+export function calculateTVL(allTokens, positions, balances): number {
+  let TVL = 0.0;
+
+  if (!allTokens || !positions.length || !balances.length || positions.length != balances.length) {
+    return 0;
+  }
+
+  for (let i = 0; i < positions.length; i++) {
+    if (allTokens[positions[i]]) {
+      TVL = TVL + (parseFloat(allTokens[positions[i]].priceUSD) * balances[i])
+    }
+  }
+
+  return TVL / 1e18;
 }

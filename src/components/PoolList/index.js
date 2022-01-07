@@ -5,9 +5,10 @@ import { withRouter } from 'react-router-dom'
 import { useMedia } from 'react-use'
 import { Box, Flex, Text } from 'rebass'
 import styled from 'styled-components'
+import { useAllTokenData } from '../../contexts/TokenData'
 
 import { TYPE } from '../../Theme'
-import { formattedNum, formattedPercent } from '../../utils'
+import { formattedNum, formattedPercent, calculateTVL } from '../../utils'
 import { Divider } from '..'
 import FormattedName from '../FormattedName'
 import { CustomLink } from '../Link'
@@ -122,6 +123,11 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
     const [page, setPage] = useState(1)
     const [maxPage, setMaxPage] = useState(1)
 
+    const allTokens = useAllTokenData();
+
+    console.log(allTokens)
+    console.log(pools)
+
     // sorting
     const [sortDirection, setSortDirection] = useState(true)
     const [sortedColumn, setSortedColumn] = useState(SORT_FIELD.TVL)
@@ -171,6 +177,8 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
     }, [pools, formattedPools, itemMax])
 
     const ListItem = ({ item, index }) => {
+        let currentTVL = calculateTVL(allTokens, item.positionAddresses, item.positionBalances)
+        console.log(currentTVL)
         let totalReturn;
         console.log(item.tokenPrice)
         if (!item || !item.tokenPrice) {
