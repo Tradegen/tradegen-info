@@ -407,7 +407,7 @@ export const Search = ({ small = false }) => {
           {filteredPoolList &&
             filteredPoolList.slice(0, poolsShown).map((pool) => {
               return (
-                <BasicLink to={'/pair/' + pool.id} key={pool.id} onClick={onDismiss}>
+                <BasicLink to={'/pool/' + pool.id} key={pool.id} onClick={onDismiss}>
                   <MenuItem>
                     <RowFixed>
                       <FormattedName text={pool.name} maxCharacters={20} style={{ marginRight: '6px' }} />
@@ -439,7 +439,7 @@ export const Search = ({ small = false }) => {
           )}
           {filteredNFTPoolList.slice(0, NFTPoolsShown).map((NFTPool) => {
             return (
-              <BasicLink to={'/token/' + NFTPool.id} key={NFTPool.id} onClick={onDismiss}>
+              <BasicLink to={'/nftpool/' + NFTPool.id} key={NFTPool.id} onClick={onDismiss}>
                 <MenuItem>
                   <RowFixed>
                     <FormattedName text={NFTPool.name} maxCharacters={20} style={{ marginRight: '6px' }} />

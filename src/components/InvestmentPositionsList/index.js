@@ -208,7 +208,7 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                 <DataText area="price" color="text" fontWeight="500">
                     {formattedNum(item.priceUSD, true)}
                 </DataText>
-                <DataText area="liq">{balances[index] ? toSignificant(balances[index] / 1e18, 3) : 0}</DataText>
+                {!below1080 && <DataText area="liq">{balances[index] ? toSignificant(balances[index] / 1e18, 3) : 0}</DataText>}
                 <DataText area="vol">{formattedNum(valueUSD, true)}</DataText>
                 {!below1080 && <DataText area="change">{formattedPercent(item.priceChangeUSD)}</DataText>}
             </DashGrid>
@@ -252,16 +252,18 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                         Price
                     </ClickableText>
                 </Flex>
-                <Flex alignItems="center">
-                    <ClickableText
-                        area="liq"
-                        onClick={(e) => {
+                {!below1080 && (
+                    <Flex alignItems="center">
+                        <ClickableText
+                            area="liq"
+                            onClick={(e) => {
 
-                        }}
-                    >
-                        Balance
-                    </ClickableText>
-                </Flex>
+                            }}
+                        >
+                            Balance
+                        </ClickableText>
+                    </Flex>
+                )}
                 <Flex alignItems="center">
                     <ClickableText
                         area="vol"
