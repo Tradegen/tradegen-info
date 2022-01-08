@@ -49,7 +49,7 @@ export default function Title() {
             {!below1080 ? (
               <img width={'160px'} style={{ marginTop: '0px' }} src={Logo} alt="logo" />
             ) : (
-              <img width={'24px'} src={Icon} alt="logo" />
+              <img width={'70px'} src={Icon} alt="logo" />
             )}
           </UniIcon>
         </RowFixed>
@@ -61,23 +61,23 @@ export default function Title() {
             <BasicLink to="/tokens">
               <Option
                 activeText={
-                  (history.location.pathname.split('/')[1] === 'tokens' ||
-                    history.location.pathname.split('/')[1] === 'token') ??
+                  (history.location.pathname.split('/')[1] === 'pools' ||
+                    history.location.pathname.split('/')[1] === 'pool') ??
                   undefined
                 }
               >
-                Tokens
+                Pools
               </Option>
             </BasicLink>
             <BasicLink to="/pairs">
               <Option
                 activeText={
-                  (history.location.pathname.split('/')[1] === 'pairs' ||
-                    history.location.pathname.split('/')[1] === 'pair') ??
+                  (history.location.pathname.split('/')[1] === 'nftpools' ||
+                    history.location.pathname.split('/')[1] === 'nftpool') ??
                   undefined
                 }
               >
-                Pairs
+                NFT Pools
               </Option>
             </BasicLink>
 

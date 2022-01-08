@@ -124,8 +124,8 @@ function SideNav({ history }) {
                 <BasicLink to="/pools">
                   <Option
                     activeText={
-                      (history.location.pathname.split('/')[1] === 'tokens' ||
-                        history.location.pathname.split('/')[1] === 'token') ??
+                      (history.location.pathname.split('/')[1] === 'pools' ||
+                        history.location.pathname.split('/')[1] === 'pool') ??
                       undefined
                     }
                   >
@@ -136,8 +136,8 @@ function SideNav({ history }) {
                 <BasicLink to="/nftpools">
                   <Option
                     activeText={
-                      (history.location.pathname.split('/')[1] === 'pairs' ||
-                        history.location.pathname.split('/')[1] === 'pair') ??
+                      (history.location.pathname.split('/')[1] === 'nftpools' ||
+                        history.location.pathname.split('/')[1] === 'nftpool') ??
                       undefined
                     }
                   >
