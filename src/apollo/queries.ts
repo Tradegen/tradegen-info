@@ -80,7 +80,7 @@ export const POSITIONS_BY_BLOCK = (account, blocks) => {
   return gql(queryString)
 }
 
-export const PRICES_BY_BLOCK_POOL = (
+export const DATA_BY_BLOCK_POOL = (
   poolAddress: string,
   blocks: readonly { timestamp: number; number: number }[]
 ): DocumentNode => {
@@ -88,7 +88,9 @@ export const PRICES_BY_BLOCK_POOL = (
   queryString += blocks.map(
     (block) => `
       t${block.timestamp}:pool(id:"${poolAddress}", block: { number: ${block.number} }) { 
-        tokenPrice
+        positionAddresses
+        positionBalances
+        totalSupply
       }
     `
   )

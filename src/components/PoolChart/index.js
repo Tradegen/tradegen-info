@@ -62,18 +62,58 @@ const PoolChart = ({ address, color, base }) => {
     console.log(SUPPORTED_TOKENS)
 
     const allTokens = useAllTokenData();
-    const tokenDatasDailyAll = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.WEEK, 3600);
+    const tokenDatasHourlyWeek = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.WEEK, 3600);
+    const tokenDatasHourlyMonth = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.MONTH, 3600);
+    const tokenDatasHourlyAll = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.ALL_TIME, 3600);
+    const tokenDatasDailyWeek = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.WEEK, 86400);
+    const tokenDatasDailyMonth = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.MONTH, 86400);
+    const tokenDatasDailyAll = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.ALL_TIME, 86400);
 
     let chartData = usePoolChartData(address, allTokens)
 
     const [timeWindow, setTimeWindow] = useState(timeframeOptions.WEEK)
+    const prevWindow = usePrevious(timeWindow)
 
     // hourly and daily price data based on the current time window
+    const hourlyWeek = usePoolPriceData(address, timeframeOptions.WEEK, 3600, tokenDatasHourlyWeek)
+    const hourlyMonth = usePoolPriceData(address, timeframeOptions.MONTH, 3600, tokenDatasHourlyMonth)
+    const hourlyAll = usePoolPriceData(address, timeframeOptions.ALL_TIME, 3600, tokenDatasHourlyAll)
+    const dailyWeek = usePoolPriceData(address, timeframeOptions.WEEK, 86400, tokenDatasDailyWeek)
+    const dailyMonth = usePoolPriceData(address, timeframeOptions.MONTH, 86400, tokenDatasDailyMonth)
     const dailyAll = usePoolPriceData(address, timeframeOptions.ALL_TIME, 86400, tokenDatasDailyAll)
 
-    const priceData = dailyAll
+    const priceData =
+        timeWindow === timeframeOptions.MONTH
+            ? // monthly selected
+            frequency === DATA_FREQUENCY.DAY
+                ? dailyMonth
+                : hourlyMonth
+            : // weekly selected
+            timeWindow === timeframeOptions.WEEK
+                ? frequency === DATA_FREQUENCY.DAY
+                    ? dailyWeek
+                    : hourlyWeek
+                : // all time selected
+                frequency === DATA_FREQUENCY.DAY
+                    ? dailyAll
+                    : hourlyAll
 
-    console.log(tokenDatasDailyAll)
+    // switch to hourly data when switched to week window
+    useEffect(() => {
+        if (timeWindow === timeframeOptions.WEEK && prevWindow && prevWindow !== timeframeOptions.WEEK) {
+            setFrequency(DATA_FREQUENCY.HOUR)
+        }
+    }, [prevWindow, timeWindow])
+
+    // switch to daily data if switche to month or all time view
+    useEffect(() => {
+        if (timeWindow === timeframeOptions.MONTH && prevWindow && prevWindow !== timeframeOptions.MONTH) {
+            setFrequency(DATA_FREQUENCY.DAY)
+        }
+        if (timeWindow === timeframeOptions.ALL_TIME && prevWindow && prevWindow !== timeframeOptions.ALL_TIME) {
+            setFrequency(DATA_FREQUENCY.DAY)
+        }
+    }, [prevWindow, timeWindow])
 
     const below1080 = useMedia('(max-width: 1080px)')
     const below600 = useMedia('(max-width: 600px)')
@@ -120,6 +160,20 @@ const PoolChart = ({ address, color, base }) => {
                     <AutoColumn gap="8px">
                         <RowFixed>
                             <OptionButton
+                                active={chartFilter === CHART_VIEW.LIQUIDITY}
+                                onClick={() => setChartFilter(CHART_VIEW.LIQUIDITY)}
+                                style={{ marginRight: '6px' }}
+                            >
+                                Liquidity
+                            </OptionButton>
+                            <OptionButton
+                                active={chartFilter === CHART_VIEW.VOLUME}
+                                onClick={() => setChartFilter(CHART_VIEW.VOLUME)}
+                                style={{ marginRight: '6px' }}
+                            >
+                                Volume
+                            </OptionButton>
+                            <OptionButton
                                 active={chartFilter === CHART_VIEW.PRICE}
                                 onClick={() => {
                                     setChartFilter(CHART_VIEW.PRICE)
@@ -131,6 +185,21 @@ const PoolChart = ({ address, color, base }) => {
                         {chartFilter === CHART_VIEW.PRICE && (
                             <AutoRow gap="4px">
                                 <PriceOption
+                                    active={frequency === DATA_FREQUENCY.DAY}
+                                    onClick={() => {
+                                        setTimeWindow(timeframeOptions.MONTH)
+                                        setFrequency(DATA_FREQUENCY.DAY)
+                                    }}
+                                >
+                                    D
+                                </PriceOption>
+                                <PriceOption
+                                    active={frequency === DATA_FREQUENCY.HOUR}
+                                    onClick={() => setFrequency(DATA_FREQUENCY.HOUR)}
+                                >
+                                    H
+                                </PriceOption>
+                                <PriceOption
                                     active={frequency === DATA_FREQUENCY.LINE}
                                     onClick={() => setFrequency(DATA_FREQUENCY.LINE)}
                                 >
@@ -140,6 +209,18 @@ const PoolChart = ({ address, color, base }) => {
                         )}
                     </AutoColumn>
                     <AutoRow justify="flex-end" gap="6px" align="flex-start">
+                        <OptionButton
+                            active={timeWindow === timeframeOptions.WEEK}
+                            onClick={() => setTimeWindow(timeframeOptions.WEEK)}
+                        >
+                            1W
+                        </OptionButton>
+                        <OptionButton
+                            active={timeWindow === timeframeOptions.MONTH}
+                            onClick={() => setTimeWindow(timeframeOptions.MONTH)}
+                        >
+                            1M
+                        </OptionButton>
                         <OptionButton
                             active={timeWindow === timeframeOptions.ALL_TIME}
                             onClick={() => setTimeWindow(timeframeOptions.ALL_TIME)}

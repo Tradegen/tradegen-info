@@ -18,7 +18,7 @@ import {
     FilteredTransactionsTradegenQueryVariables,
 } from '../apollo/generated/types'
 import {
-    PRICES_BY_BLOCK_POOL,
+    DATA_BY_BLOCK_POOL,
     POOL_DATA,
     POOL_DATA_LATEST,
     POOLS_CURRENT,
@@ -491,9 +491,13 @@ const getPoolTransactions = async (allPoolsFormatted: string[]): Promise<Partial
     return {}
 }
 
-const getIntervalPoolData = async (poolAddress, startTime, interval = 3600, latestBlock) => {
+const getIntervalPoolData = async (poolAddress, startTime, interval = 3600, latestBlock, tokenData) => {
     const utcEndTime = dayjs.utc()
     let time = startTime
+
+    if (!tokenData) {
+        return undefined;
+    }
 
     // create an array of hour start times until we reach current hour
     // buffer by half hour to catch case where graph isnt synced to latest block
@@ -524,20 +528,36 @@ const getIntervalPoolData = async (poolAddress, startTime, interval = 3600, late
             })
         }
 
-        const result = await splitQuery(PRICES_BY_BLOCK_POOL, tradegenClient, [poolAddress], blocks, 50)
+        const result = await splitQuery(DATA_BY_BLOCK_POOL, tradegenClient, [poolAddress], blocks, 50)
+
+        console.log(result)
+        console.log(tokenData)
 
         // format token ETH price results
         const values = []
+        let index = 0;
         for (const row in result) {
             const timestamp = row.split('t')[1]
-            const tokenPrice = parseFloat(result[row]?.tokenPrice) / 1e18
-            if (timestamp) {
+            const positionAddresses = result[row]?.positionAddresses
+            const positionBalances = result[row]?.positionBalances
+            const totalSupply = result[row]?.totalSupply
+            if (timestamp && positionAddresses && positionBalances && totalSupply) {
+                let poolValue = 0;
+                for (let i = 0; i < positionAddresses.length; i++) {
+                    if (tokenData[positionAddresses[i]][index]) {
+                        poolValue += (parseFloat(tokenData[positionAddresses[i]][index].close) * positionBalances[i]);
+                    }
+                }
+                let tokenPrice = poolValue / totalSupply;
                 values.push({
                     timestamp,
                     tokenPrice,
                 })
             }
+            index++;
         }
+
+        console.log(values)
 
         const formattedHistory = []
 
@@ -546,9 +566,11 @@ const getIntervalPoolData = async (poolAddress, startTime, interval = 3600, late
             formattedHistory.push({
                 timestamp: values[i].timestamp,
                 open: parseFloat(values[i].tokenPrice),
-                close: parseFloat(values[i + 1].tokenPrice),
+                close: (parseFloat(values[i + 1].tokenPrice) > 0) ? parseFloat(values[i + 1].tokenPrice) : parseFloat(values[i].tokenPrice),
             })
         }
+
+        console.log(formattedHistory)
 
         return formattedHistory
     } catch (e) {
@@ -799,8 +821,6 @@ export function usePoolPriceData(poolAddress, timeWindow, interval = 3600, token
     const chartData = state?.[poolAddress]?.[timeWindow]?.[interval]
     const [latestBlock] = useLatestBlocks()
 
-    //console.log(tokenData)
-
     useEffect(() => {
         const currentTime = dayjs.utc()
         const windowSize = timeWindow === timeframeOptions.MONTH ? 'month' : 'week'
@@ -808,13 +828,13 @@ export function usePoolPriceData(poolAddress, timeWindow, interval = 3600, token
             timeWindow === timeframeOptions.ALL_TIME ? 1589760000 : currentTime.subtract(1, windowSize).startOf('hour').unix()
 
         async function fetch() {
-            const data = await getIntervalPoolData(poolAddress, startTime, interval, latestBlock)
+            const data = await getIntervalPoolData(poolAddress, startTime, interval, latestBlock, tokenData)
             updatePriceData(poolAddress, data, timeWindow, interval)
         }
         if (!chartData) {
             fetch()
         }
-    }, [chartData, interval, timeWindow, poolAddress, updatePriceData, latestBlock])
+    }, [chartData, interval, timeWindow, poolAddress, updatePriceData, latestBlock, tokenData])
 
     return chartData
 }
