@@ -18,7 +18,7 @@ import {
     FilteredTransactionsTradegenQueryVariables,
 } from '../apollo/generated/types'
 import {
-    PRICES_BY_BLOCK_NFT_POOL,
+    DATA_BY_BLOCK_NFT_POOL,
     NFT_POOL_DATA,
     NFT_POOL_DATA_LATEST,
     NFT_POOLS_CURRENT,
@@ -491,9 +491,13 @@ const getNFTPoolTransactions = async (allNFTPoolsFormatted: string[]): Promise<P
     return {}
 }
 
-const getIntervalNFTPoolData = async (NFTPoolAddress, startTime, interval = 3600, latestBlock) => {
+const getIntervalNFTPoolData = async (NFTPoolAddress, startTime, interval = 3600, latestBlock, tokenData) => {
     const utcEndTime = dayjs.utc()
     let time = startTime
+
+    if (!tokenData) {
+        return undefined;
+    }
 
     // create an array of hour start times until we reach current hour
     // buffer by half hour to catch case where graph isnt synced to latest block
@@ -524,19 +528,30 @@ const getIntervalNFTPoolData = async (NFTPoolAddress, startTime, interval = 3600
             })
         }
 
-        const result = await splitQuery(PRICES_BY_BLOCK_NFT_POOL, tradegenClient, [NFTPoolAddress], blocks, 50)
+        const result = await splitQuery(DATA_BY_BLOCK_NFT_POOL, tradegenClient, [NFTPoolAddress], blocks, 50)
 
         // format token ETH price results
         const values = []
+        let index = 0;
         for (const row in result) {
             const timestamp = row.split('t')[1]
-            const tokenPrice = parseFloat(result[row]?.tokenPrice) / 1e18
-            if (timestamp) {
+            const positionAddresses = result[row]?.positionAddresses
+            const positionBalances = result[row]?.positionBalances
+            const totalSupply = result[row]?.totalSupply
+            if (timestamp && positionAddresses && positionBalances && totalSupply) {
+                let poolValue = 0;
+                for (let i = 0; i < positionAddresses.length; i++) {
+                    if (tokenData[positionAddresses[i]][index]) {
+                        poolValue += (parseFloat(tokenData[positionAddresses[i]][index].close) * positionBalances[i]);
+                    }
+                }
+                let tokenPrice = poolValue / (totalSupply * 1e18);
                 values.push({
                     timestamp,
                     tokenPrice,
                 })
             }
+            index++;
         }
 
         const formattedHistory = []
@@ -546,9 +561,11 @@ const getIntervalNFTPoolData = async (NFTPoolAddress, startTime, interval = 3600
             formattedHistory.push({
                 timestamp: values[i].timestamp,
                 open: parseFloat(values[i].tokenPrice),
-                close: parseFloat(values[i + 1].tokenPrice),
+                close: (parseFloat(values[i + 1].tokenPrice) > 0) ? parseFloat(values[i + 1].tokenPrice) : parseFloat(values[i].tokenPrice),
             })
         }
+
+        console.log(formattedHistory)
 
         return formattedHistory
     } catch (e) {
@@ -791,7 +808,7 @@ export function useNFTPoolChartData(NFTPoolAddress) {
  * @param {*} timeWindow // a preset time window from constant - how far back to look
  * @param {*} interval  // the chunk size in seconds - default is 1 hour of 3600s
  */
-export function useNFTPoolPriceData(NFTPoolAddress, timeWindow, interval = 3600) {
+export function useNFTPoolPriceData(NFTPoolAddress, timeWindow, interval = 3600, tokenData) {
     const [state, { updatePriceData }] = useTokenDataContext()
     const chartData = state?.[NFTPoolAddress]?.[timeWindow]?.[interval]
     const [latestBlock] = useLatestBlocks()
@@ -803,13 +820,13 @@ export function useNFTPoolPriceData(NFTPoolAddress, timeWindow, interval = 3600)
             timeWindow === timeframeOptions.ALL_TIME ? 1589760000 : currentTime.subtract(1, windowSize).startOf('hour').unix()
 
         async function fetch() {
-            const data = await getIntervalNFTPoolData(NFTPoolAddress, startTime, interval, latestBlock)
+            const data = await getIntervalNFTPoolData(NFTPoolAddress, startTime, interval, latestBlock, tokenData)
             updatePriceData(NFTPoolAddress, data, timeWindow, interval)
         }
         if (!chartData) {
             fetch()
         }
-    }, [chartData, interval, timeWindow, NFTPoolAddress, updatePriceData, latestBlock])
+    }, [chartData, interval, timeWindow, NFTPoolAddress, updatePriceData, latestBlock, tokenData])
 
     return chartData
 }

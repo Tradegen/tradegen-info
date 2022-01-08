@@ -768,10 +768,8 @@ const getIntervalTokenDataMultipleTokens = async (tokenAddresses, startTime, int
     }
 
     let temp = tokenAddresses.map((tokenAddress) => tokenAddress.toLowerCase());
-    console.log(temp);
-
     const result = await splitQuery(PRICES_BY_BLOCK_MULTIPLE_TOKENS, client, [temp], blocks, 50)
-    console.log(result)
+    console.log(startTime)
 
     // format token ETH price results
     let values = {}
@@ -781,7 +779,6 @@ const getIntervalTokenDataMultipleTokens = async (tokenAddresses, startTime, int
     for (const row in result) {
       const timestamp = row.split('t')[1]
       const token = row.split('t')[2]
-      console.log(token)
       const derivedCUSD = parseFloat(result[row]?.derivedCUSD)
       if (timestamp && token) {
         values[token].push({

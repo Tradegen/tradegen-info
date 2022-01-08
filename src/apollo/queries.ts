@@ -116,6 +116,25 @@ export const PRICES_BY_BLOCK_NFT_POOL = (
   return gql(queryString)
 }
 
+export const DATA_BY_BLOCK_NFT_POOL = (
+  poolAddress: string,
+  blocks: readonly { timestamp: number; number: number }[]
+): DocumentNode => {
+  let queryString = 'query pricesByBlockNFTPool {'
+  queryString += blocks.map(
+    (block) => `
+      t${block.timestamp}:nftpool(id:"${poolAddress}", block: { number: ${block.number} }) { 
+        positionAddresses
+        positionBalances
+        totalSupply
+      }
+    `
+  )
+
+  queryString += '}'
+  return gql(queryString)
+}
+
 export const TOP_LPS_PER_PAIRS = gql`
   query TopLpsPerPairs($pair: String!) {
     liquidityPositions(where: { pair: $pair }, orderBy: liquidityTokenBalance, orderDirection: desc, first: 10) {

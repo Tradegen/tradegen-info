@@ -15,7 +15,7 @@ import { AutoColumn } from '../Column'
 import DropdownSelect from '../DropdownSelect'
 import LocalLoader from '../LocalLoader'
 import { AutoRow, RowBetween, RowFixed } from '../Row'
-import { useAllTokenData, useTokenPriceDataCombined, useTokenPriceData } from '../../contexts/TokenData'
+import { useAllTokenData, useTokenPriceDataCombined } from '../../contexts/TokenData'
 
 const ChartWrapper = styled.div`
   height: 100%;
@@ -81,6 +81,8 @@ const PoolChart = ({ address, color, base }) => {
     const dailyWeek = usePoolPriceData(address, timeframeOptions.WEEK, 86400, tokenDatasDailyWeek)
     const dailyMonth = usePoolPriceData(address, timeframeOptions.MONTH, 86400, tokenDatasDailyMonth)
     const dailyAll = usePoolPriceData(address, timeframeOptions.ALL_TIME, 86400, tokenDatasDailyAll)
+
+    console.log(tokenDatasDailyAll)
 
     const priceData =
         timeWindow === timeframeOptions.MONTH

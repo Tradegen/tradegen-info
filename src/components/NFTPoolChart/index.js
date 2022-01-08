@@ -5,7 +5,7 @@ import { useMedia, usePrevious } from 'react-use'
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import styled from 'styled-components'
 
-import { timeframeOptions } from '../../constants'
+import { timeframeOptions, SUPPORTED_TOKENS } from '../../constants'
 import { useDarkModeManager } from '../../contexts/LocalStorage'
 import { useNFTPoolChartData, useNFTPoolPriceData } from '../../contexts/NFTPoolData'
 import { formattedNum, getTimeframe, toK, toNiceDate, toNiceDateYear } from '../../utils'
@@ -15,6 +15,7 @@ import { AutoColumn } from '../Column'
 import DropdownSelect from '../DropdownSelect'
 import LocalLoader from '../LocalLoader'
 import { AutoRow, RowBetween, RowFixed } from '../Row'
+import { useAllTokenData, useTokenPriceDataCombined } from '../../contexts/TokenData'
 
 const ChartWrapper = styled.div`
   height: 100%;
@@ -63,13 +64,21 @@ const NFTPoolChart = ({ address, color, base }) => {
     const [timeWindow, setTimeWindow] = useState(timeframeOptions.WEEK)
     const prevWindow = usePrevious(timeWindow)
 
+    const allTokens = useAllTokenData();
+    const tokenDatasHourlyWeek = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.WEEK, 3600);
+    const tokenDatasHourlyMonth = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.MONTH, 3600);
+    const tokenDatasHourlyAll = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.ALL_TIME, 3600);
+    const tokenDatasDailyWeek = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.WEEK, 86400);
+    const tokenDatasDailyMonth = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.MONTH, 86400);
+    const tokenDatasDailyAll = useTokenPriceDataCombined(SUPPORTED_TOKENS, timeframeOptions.ALL_TIME, 86400);
+
     // hourly and daily price data based on the current time window
-    const hourlyWeek = useNFTPoolPriceData(address, timeframeOptions.WEEK, 3600)
-    const hourlyMonth = useNFTPoolPriceData(address, timeframeOptions.MONTH, 3600)
-    const hourlyAll = useNFTPoolPriceData(address, timeframeOptions.ALL_TIME, 3600)
-    const dailyWeek = useNFTPoolPriceData(address, timeframeOptions.WEEK, 86400)
-    const dailyMonth = useNFTPoolPriceData(address, timeframeOptions.MONTH, 86400)
-    const dailyAll = useNFTPoolPriceData(address, timeframeOptions.ALL_TIME, 86400)
+    const hourlyWeek = useNFTPoolPriceData(address, timeframeOptions.WEEK, 3600, tokenDatasHourlyWeek)
+    const hourlyMonth = useNFTPoolPriceData(address, timeframeOptions.MONTH, 3600, tokenDatasHourlyMonth)
+    const hourlyAll = useNFTPoolPriceData(address, timeframeOptions.ALL_TIME, 3600, tokenDatasHourlyAll)
+    const dailyWeek = useNFTPoolPriceData(address, timeframeOptions.WEEK, 86400, tokenDatasDailyWeek)
+    const dailyMonth = useNFTPoolPriceData(address, timeframeOptions.MONTH, 86400, tokenDatasDailyMonth)
+    const dailyAll = useNFTPoolPriceData(address, timeframeOptions.ALL_TIME, 86400, tokenDatasDailyAll)
 
     const priceData =
         timeWindow === timeframeOptions.MONTH
