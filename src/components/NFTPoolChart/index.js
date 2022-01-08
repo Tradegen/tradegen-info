@@ -162,7 +162,7 @@ const NFTPoolChart = ({ address, color, base }) => {
                                 onClick={() => setChartFilter(CHART_VIEW.LIQUIDITY)}
                                 style={{ marginRight: '6px' }}
                             >
-                                Liquidity
+                                TVL
                             </OptionButton>
                             <OptionButton
                                 active={chartFilter === CHART_VIEW.VOLUME}
@@ -275,12 +275,12 @@ const NFTPoolChart = ({ address, color, base }) => {
                         />
                         <Area
                             key={'other'}
-                            dataKey={'totalLiquidityUSD'}
+                            dataKey={'totalValueLockedUSD'}
                             stackId="2"
                             strokeWidth={2}
                             dot={false}
                             type="monotone"
-                            name={'Liquidity'}
+                            name={'TVL'}
                             yAxisId={0}
                             stroke={darken(0.12, color)}
                             fill="url(#colorUv)"

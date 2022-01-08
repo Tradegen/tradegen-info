@@ -615,7 +615,7 @@ const getNFTPoolChartData = async (NFTPoolAddress: string): Promise<readonly Cha
 
         resultData = fetchedData.map((dayData) => {
             dayIndexSet.add((dayData.date / oneDay).toFixed(0))
-            return { ...dayData, dayString: '', dailyVolumeUSD: parseFloat(dayData.dailyVolumeUSD) }
+            return { ...dayData, dayString: '', dailyVolumeUSD: parseFloat(dayData.dailyVolumeUSD) / 1e18, totalValueLockedUSD: (Number(dayData.totalValueLockedUSD) / 1e18).toString() }
         })
 
         // fill in empty days
@@ -632,7 +632,7 @@ const getNFTPoolChartData = async (NFTPoolAddress: string): Promise<readonly Cha
                     dayString: nextDay.toString(),
                     dailyVolumeUSD: 0,
                     priceUSD: latestPriceUSD,
-                    totalValueLockedUSD: latestTotalValueLockedUSD,
+                    totalValueLockedUSD: (Number(latestTotalValueLockedUSD.toString()) / 1e18).toString(),
                 })
             } else {
                 latestTotalValueLockedUSD = dayIndexArray[index].totalValueLockedUSD
