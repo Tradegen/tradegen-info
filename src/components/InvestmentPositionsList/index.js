@@ -224,11 +224,10 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                         area="name"
                         fontWeight="500"
                         onClick={(e) => {
-                            setSortedColumn(SORT_FIELD.NAME)
-                            setSortDirection(sortedColumn !== SORT_FIELD.NAME ? true : !sortDirection)
+
                         }}
                     >
-                        {below680 ? 'Symbol' : 'Name'} {sortedColumn === SORT_FIELD.NAME ? (!sortDirection ? '↑' : '↓') : ''}
+                        {below680 ? 'Symbol' : 'Name'}
                     </ClickableText>
                 </Flex>
                 {!below680 && (
@@ -236,11 +235,10 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                         <ClickableText
                             area="symbol"
                             onClick={() => {
-                                setSortedColumn(SORT_FIELD.SYMBOL)
-                                setSortDirection(sortedColumn !== SORT_FIELD.SYMBOL ? true : !sortDirection)
+
                             }}
                         >
-                            Symbol {sortedColumn === SORT_FIELD.SYMBOL ? (!sortDirection ? '↑' : '↓') : ''}
+                            Symbol
                         </ClickableText>
                     </Flex>
                 )}
@@ -248,36 +246,31 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                     <ClickableText
                         area="price"
                         onClick={(e) => {
-                            setSortedColumn(SORT_FIELD.PRICE)
-                            setSortDirection(sortedColumn !== SORT_FIELD.PRICE ? true : !sortDirection)
+
                         }}
                     >
-                        Price {sortedColumn === SORT_FIELD.PRICE ? (!sortDirection ? '↑' : '↓') : ''}
+                        Price
                     </ClickableText>
                 </Flex>
                 <Flex alignItems="center">
                     <ClickableText
                         area="liq"
                         onClick={(e) => {
-                            setSortedColumn(SORT_FIELD.BAL)
-                            setSortDirection(sortedColumn !== SORT_FIELD.BAL ? true : !sortDirection)
+
                         }}
                     >
-                        Balance {sortedColumn === SORT_FIELD.BAL ? (!sortDirection ? '↑' : '↓') : ''}
+                        Balance
                     </ClickableText>
                 </Flex>
                 <Flex alignItems="center">
                     <ClickableText
                         area="vol"
                         onClick={() => {
-                            setSortedColumn(SORT_FIELD.VAL)
-                            setSortDirection(
-                                sortedColumn !== (SORT_FIELD.VAL) ? true : !sortDirection
-                            )
+
                         }}
                     >
                         Value
-                        {sortedColumn === (SORT_FIELD.VAL) ? (!sortDirection ? '↑' : '↓') : ''}
+
                     </ClickableText>
                 </Flex>
                 {!below1080 && (
@@ -285,12 +278,11 @@ function InvestmentPositionsList({ positions, balances, itemMax = 10, useTracked
                         <ClickableText
                             area="change"
                             onClick={(e) => {
-                                setSortedColumn(SORT_FIELD.CHANGE)
-                                setSortDirection(sortedColumn !== SORT_FIELD.CHANGE ? true : !sortDirection)
+
                             }}
                         >
                             Price Change (24hrs)
-                            {sortedColumn === SORT_FIELD.CHANGE ? (!sortDirection ? '↑' : '↓') : ''}
+
                         </ClickableText>
                     </Flex>
                 )}
