@@ -46,6 +46,7 @@ const UPDATE_PRICE_DATA = 'UPDATE_PRICE_DATA'
 const UPDATE_TOP_TOKENS = ' UPDATE_TOP_TOKENS'
 const UPDATE_ALL_PAIRS = 'UPDATE_ALL_PAIRS'
 const UPDATE_COMBINED = 'UPDATE_COMBINED'
+const UPDATE_PRICE_DATA_ALL_TOKENS = 'UPDATE_PRICE_DATA_ALL_TOKENS'
 
 const TOKEN_PAIRS_KEY = 'TOKEN_PAIRS_KEY'
 
@@ -135,6 +136,17 @@ function reducer(state, { type, payload }) {
         },
       }
     }
+
+    case UPDATE_PRICE_DATA_ALL_TOKENS: {
+      const { data, timeWindow, interval } = payload
+      return {
+        ...state,
+        [timeWindow]: {
+          ...state?.[timeWindow],
+          [interval]: data,
+        },
+      }
+    }
     default: {
       throw Error(`Unexpected action type in DataContext reducer: '${type}'.`)
     }
@@ -199,6 +211,13 @@ export default function Provider({ children }: { children: React.ReactNode }): J
     })
   }, [])
 
+  const updatePriceDataAllTokens = useCallback((data, timeWindow, interval) => {
+    dispatch({
+      type: UPDATE_PRICE_DATA_ALL_TOKENS,
+      payload: { data, timeWindow, interval },
+    })
+  }, [])
+
   return (
     <TokenDataContext.Provider
       value={useMemo(
@@ -212,6 +231,7 @@ export default function Provider({ children }: { children: React.ReactNode }): J
             updateAllPairs,
             updatePriceData,
             updateCombinedVolume,
+            updatePriceDataAllTokens,
           },
         ],
         [
@@ -223,6 +243,7 @@ export default function Provider({ children }: { children: React.ReactNode }): J
           updateTopTokens,
           updateAllPairs,
           updatePriceData,
+          updatePriceDataAllTokens,
         ]
       )}
     >
@@ -1060,22 +1081,12 @@ export function useSelectedTokenData(tokenAddresses) {
  * @param {*} interval  // the chunk size in seconds - default is 1 hour of 3600s
  */
 export function useTokenPriceDataCombined(tokenAddresses, timeWindow, interval = 3600) {
-  const [state, { updatePriceData }] = useTokenDataContext()
+  const [state, { updatePriceDataAllTokens }] = useTokenDataContext()
   const [latestBlock] = useLatestBlocks()
 
-  const datas = useMemo(() => {
-    return (
-      tokenAddresses &&
-      tokenAddresses.reduce(function (acc, address) {
-        acc[address] = state?.[address]?.[timeWindow]?.[interval]
-        return acc
-      }, {})
-    )
-  }, [state, tokenAddresses])
+  const data = state?.[timeWindow]?.[interval]
 
-  let temp = Object.values(datas).filter((val) => !val).length;
-
-  const isMissingData = useMemo(() => temp == tokenAddresses.length, [datas])
+  console.log(data)
 
   useEffect(() => {
     const currentTime = dayjs.utc()
@@ -1083,38 +1094,16 @@ export function useTokenPriceDataCombined(tokenAddresses, timeWindow, interval =
     const startTime =
       timeWindow === timeframeOptions.ALL_TIME ? 1589760000 : currentTime.subtract(1, windowSize).startOf('hour').unix()
 
-    async function fetch() {/*
-      Promise.all(
-        tokenAddresses.map(async (address) => {
-          console.log(address)
-          return await getIntervalTokenData(address.toLowerCase(), startTime, interval, latestBlock)
-        })
-      ).then((res) => {
-        res &&
-          res.map((result, i) => {
-            const tokenAddress = tokenAddresses[i]
-            console.log(result)
-            updatePriceData(tokenAddress, result)
-            return true
-          })
-      })
-        .catch(() => {
-          console.log('error fetching combined data')
-        })*/
-
-      for (let i = 0; i < tokenAddresses.length; i++) {
-        const data = await getIntervalTokenData(tokenAddresses[i].toLowerCase(), startTime, interval, latestBlock)
-        updatePriceData(tokenAddresses[i], data, timeWindow, interval)
-      }
-
+    async function fetch() {
       //test
-      let test = await getIntervalTokenDataMultipleTokens(tokenAddresses, startTime, interval, latestBlock);
-      console.log(test)
+      let temp = await getIntervalTokenDataMultipleTokens(tokenAddresses, startTime, interval, latestBlock);
+      updatePriceDataAllTokens(temp, timeWindow, interval)
+      console.log(temp)
     }
-    if (!datas[tokenAddresses[0]]) {
+    if (!data) {
       fetch()
     }
-  }, [datas, interval, timeWindow, tokenAddresses, updatePriceData, latestBlock])
+  }, [data, interval, timeWindow, tokenAddresses, updatePriceDataAllTokens, latestBlock])
 
-  return datas
+  return data
 }
