@@ -210,15 +210,17 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
                         </CustomLink>
                     </Row>
                 </DataText>
-                <DataText area="tvl">{formattedNum(currentTVL / 1e18, true)}</DataText>
-                <DataText area="fee">{item.performanceFee / 100}%</DataText>
                 {!below1080 && (
-                    <DataText area="price" color="text" fontWeight="500">
-                        {formattedNum(Number(currentPrice.toString()) / 1e18, true)}
-                    </DataText>
+                    <DataText area="tvl">{formattedNum(currentTVL / 1e18, true)}</DataText>
                 )}
+                {!below1080 && (
+                    <DataText area="fee">{item.performanceFee / 100}%</DataText>
+                )}
+                <DataText area="price" color="text" fontWeight="500">
+                    {formattedNum(Number(currentPrice.toString()) / 1e18, true)}
+                </DataText>
                 {!below1080 && <DataText area="change">{formattedPercent(priceChange)}</DataText>}
-                {!below1080 && <DataText area="roi">{formattedPercent(totalReturn)}</DataText>}
+                <DataText area="roi">{formattedPercent(totalReturn)}</DataText>
             </DashGrid>
         )
     }
@@ -239,44 +241,46 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
                         {below680 ? 'Symbol' : 'Name'} {sortedColumn === SORT_FIELD.NAME ? (!sortDirection ? '↑' : '↓') : ''}
                     </ClickableText>
                 </Flex>
-                <Flex alignItems="center">
-                    <ClickableText
-                        area="tvl"
-                        onClick={(e) => {
-                            setSortedColumn(SORT_FIELD.TVL)
-                            setSortDirection(sortedColumn !== SORT_FIELD.TVL ? true : !sortDirection)
-                        }}
-                    >
-                        TVL {sortedColumn === SORT_FIELD.TVL ? (!sortDirection ? '↑' : '↓') : ''}
-                    </ClickableText>
-                </Flex>
-                <Flex alignItems="center">
-                    <ClickableText
-                        area="fee"
-                        onClick={() => {
-                            setSortedColumn(SORT_FIELD.FEE)
-                            setSortDirection(
-                                sortedColumn !== (SORT_FIELD.FEE) ? true : !sortDirection
-                            )
-                        }}
-                    >
-                        Performance Fee
-                        {sortedColumn === (SORT_FIELD.FEE) ? (!sortDirection ? '↑' : '↓') : ''}
-                    </ClickableText>
-                </Flex>
                 {!below1080 && (
                     <Flex alignItems="center">
                         <ClickableText
-                            area="price"
+                            area="tvl"
                             onClick={(e) => {
-                                setSortedColumn(SORT_FIELD.PRICE)
-                                setSortDirection(sortedColumn !== SORT_FIELD.PRICE ? true : !sortDirection)
+                                setSortedColumn(SORT_FIELD.TVL)
+                                setSortDirection(sortedColumn !== SORT_FIELD.TVL ? true : !sortDirection)
                             }}
                         >
-                            Price {sortedColumn === SORT_FIELD.PRICE ? (!sortDirection ? '↑' : '↓') : ''}
+                            TVL {sortedColumn === SORT_FIELD.TVL ? (!sortDirection ? '↑' : '↓') : ''}
                         </ClickableText>
                     </Flex>
                 )}
+                {!below1080 && (
+                    <Flex alignItems="center">
+                        <ClickableText
+                            area="fee"
+                            onClick={() => {
+                                setSortedColumn(SORT_FIELD.FEE)
+                                setSortDirection(
+                                    sortedColumn !== (SORT_FIELD.FEE) ? true : !sortDirection
+                                )
+                            }}
+                        >
+                            Performance Fee
+                            {sortedColumn === (SORT_FIELD.FEE) ? (!sortDirection ? '↑' : '↓') : ''}
+                        </ClickableText>
+                    </Flex>
+                )}
+                <Flex alignItems="center">
+                    <ClickableText
+                        area="price"
+                        onClick={(e) => {
+                            setSortedColumn(SORT_FIELD.PRICE)
+                            setSortDirection(sortedColumn !== SORT_FIELD.PRICE ? true : !sortDirection)
+                        }}
+                    >
+                        Price {sortedColumn === SORT_FIELD.PRICE ? (!sortDirection ? '↑' : '↓') : ''}
+                    </ClickableText>
+                </Flex>
                 {!below1080 && (
                     <Flex alignItems="center">
                         <ClickableText
@@ -291,20 +295,18 @@ function TopPoolList({ pools, itemMax = 10, useTracked = false }) {
                         </ClickableText>
                     </Flex>
                 )}
-                {!below1080 && (
-                    <Flex alignItems="center">
-                        <ClickableText
-                            area="roi"
-                            onClick={(e) => {
-                                setSortedColumn(SORT_FIELD.ROI)
-                                setSortDirection(sortedColumn !== SORT_FIELD.ROI ? true : !sortDirection)
-                            }}
-                        >
-                            Total Return
-                            {sortedColumn === SORT_FIELD.ROI ? (!sortDirection ? '↑' : '↓') : ''}
-                        </ClickableText>
-                    </Flex>
-                )}
+                <Flex alignItems="center">
+                    <ClickableText
+                        area="roi"
+                        onClick={(e) => {
+                            setSortedColumn(SORT_FIELD.ROI)
+                            setSortDirection(sortedColumn !== SORT_FIELD.ROI ? true : !sortDirection)
+                        }}
+                    >
+                        Total Return
+                        {sortedColumn === SORT_FIELD.ROI ? (!sortDirection ? '↑' : '↓') : ''}
+                    </ClickableText>
+                </Flex>
             </DashGrid>
             <Divider />
             <List p={0}>

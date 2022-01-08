@@ -291,7 +291,9 @@ function TxnList({ transactions, nameOverride, color }) {
             {getTransactionType(item.type, item.name)}
           </Link>
         </DataText>
-        <DataText area="investmentType">{item.investmentType}</DataText>
+        {!below1080 && (
+          <DataText area="investmentType">{item.investmentType}</DataText>
+        )}
         <DataText area="value">
           {formattedNum(parseFloat((BigInt(item.amountUSD.toString()) / BigInt("10000000000000000")).toString()) / 100, true)}
         </DataText>
