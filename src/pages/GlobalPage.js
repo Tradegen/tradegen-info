@@ -21,6 +21,7 @@ import { useAllPoolData } from '../contexts/PoolData'
 import { useAllNFTPoolData } from '../contexts/NFTPoolData'
 import { ThemedBackground, TYPE } from '../Theme'
 import { formattedNum, formattedPercent } from '../utils'
+import { toBigDecimal } from '../utils/typeAssertions'
 
 const ListOptions = styled(AutoRow)`
   height: 40px;
@@ -46,12 +47,11 @@ function GlobalPage() {
   // get data for lists and totals
   const allPools = useAllPoolData()
   const allNFTPools = useAllNFTPoolData()
-  const { totalLiquidityUSD, oneDayVolumeUSD, volumeChangeUSD, liquidityChangeUSD } = useGlobalData()
+  const { totalValueLockedUSD, oneDayVolumeUSD, volumeChangeUSD, totalValueLockedChangeUSD } = useGlobalData()
   const transactionsTradegen = useGlobalTransactionsTradegen()
 
-  console.log(allPools)
-  console.log(allNFTPools)
-  console.log(transactionsTradegen)
+  console.log(totalValueLockedUSD)
+  console.log(oneDayVolumeUSD)
 
   // breakpoints
   const below800 = useMedia('(max-width: 800px)')
@@ -89,7 +89,7 @@ function GlobalPage() {
                       </RowBetween>
                       <RowBetween align="flex-end">
                         <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {oneDayVolumeUSD ? formattedNum(oneDayVolumeUSD, true) : '-'}
+                          {(oneDayVolumeUSD || oneDayVolumeUSD == 0) ? formattedNum(oneDayVolumeUSD, true) : '-'}
                         </TYPE.main>
                         <TYPE.main fontSize={12}>{volumeChangeUSD ? formattedPercent(volumeChangeUSD) : '-'}</TYPE.main>
                       </RowBetween>
@@ -101,10 +101,10 @@ function GlobalPage() {
                       </RowBetween>
                       <RowBetween align="flex-end">
                         <TYPE.main fontSize={'1.5rem'} lineHeight={1} fontWeight={600}>
-                          {totalLiquidityUSD ? formattedNum(totalLiquidityUSD, true) : '-'}
+                          {totalValueLockedUSD ? formattedNum(totalValueLockedUSD / toBigDecimal("1e18"), true) : '-'}
                         </TYPE.main>
                         <TYPE.main fontSize={12}>
-                          {liquidityChangeUSD ? formattedPercent(liquidityChangeUSD) : '-'}
+                          {totalValueLockedChangeUSD ? formattedPercent(totalValueLockedChangeUSD) : '-'}
                         </TYPE.main>
                       </RowBetween>
                     </AutoColumn>

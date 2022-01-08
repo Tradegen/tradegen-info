@@ -14,7 +14,7 @@ import TradingViewChart, { CHART_TYPES } from '../TradingViewChart'
 
 const CHART_VIEW = {
   VOLUME: 'Volume',
-  LIQUIDITY: 'Liquidity',
+  LIQUIDITY: 'TVL',
 }
 
 const VOLUME_WINDOW = {
