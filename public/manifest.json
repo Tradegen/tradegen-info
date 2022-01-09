@@ -3,13 +3,13 @@
   "name": "Analytics for Tradegen, a decentralized asset management and algo trading platform on Celo.",
   "icons": [
     {
-      "src": "./images/app-icon@192w.png",
+      "src": "./favicon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./images/app-icon.png",
+      "src": "./favicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
