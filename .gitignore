@@ -23,3 +23,5 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 src/apollo/generated/
+yarn.lock
+package-lock.json
